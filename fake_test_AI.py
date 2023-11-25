@@ -24,11 +24,11 @@ class Jarvis():
             r.adjust_for_ambient_noise(source)
             print("Listening...")
         
-        for i in range(12):
-            self.driver.set_pixel(i, 0, 0, 255)
-        self.driver.show()
-        
-        audio = r.listen(source)
+            for i in range(12):
+                self.driver.set_pixel(i, 0, 0, 255)
+            self.driver.show()
+            
+            audio = r.listen(source)
 
         try:
             print('Recognizing...')
