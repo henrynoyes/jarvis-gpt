@@ -3,25 +3,19 @@ from gpiozero import Button, LED
 import apa102
 import sounddevice
 from openai import OpenAI
-from elevenlabs import generate, play
+from elevenlabs import generate, stream
 
 class Jarvis():
 
     def __init__(self):
         self.client = OpenAI()
-        
-#     def init_leds(self):
-#         power = LED(5)
-#         power.on()
 
     def listen(self):
 
-#         self.init_leds()
-        
         driver = apa102.APA102(num_led=12)
         power = LED(5)
         power.on()
-
+        
         r = sr.Recognizer()
         with sr.Microphone() as source:
             # ambient adjustment causes longer delay
@@ -46,13 +40,20 @@ class Jarvis():
             return None
         
     def request(self, text):
+        
+        driver = apa102.APA102(num_led=12)
+        for i in range(12):
+            driver.set_pixel(i, 255, 0, 0)
+        driver.show()
+        power = LED(5)
+        power.on()
 
         if text:
             print('Responding...')
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "Answer as if you are J.A.R.V.I.S. from Iron Man."},
+                    {"role": "system", "content": "Answer as if you are J.A.R.V.I.S. from Iron Man. Address the user with Sir."},
                     {"role": "user", "content": text}])
             
             resp_str = response.choices[0].message.content
@@ -63,19 +64,30 @@ class Jarvis():
         else:
             print('No text recognized')
             return None
+        driver.clear_strip()
 
     def play(self, response):
+        
+        driver = apa102.APA102(num_led=12)
+        for i in range(12):
+            driver.set_pixel(i, 0, 255, 0)
+        driver.show()
+        power = LED(5)
+        power.on()
         
         print('Generating audio...')
         # George, Matthew. Joseph, Daniel
         audio = generate(
             text=response,
             voice="Matthew",
-            model="eleven_monolingual_v1"
+            model="eleven_monolingual_v1",
+            stream=True
             )
         
         print('Playing audio...')
-        play(audio)
+        stream(audio)
+
+        driver.clear_strip()
 
 
     def run(self):
