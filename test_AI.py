@@ -3,6 +3,7 @@ from gpiozero import Button, LED
 import apa102
 import sounddevice
 from openai import OpenAI
+from elevenlabs import generate, play
 
 class Jarvis():
 
@@ -54,15 +55,31 @@ class Jarvis():
                     {"role": "system", "content": "Answer as if you are J.A.R.V.I.S. from Iron Man."},
                     {"role": "user", "content": text}])
             
-            print(response.choices[0].message.content)
+            resp_str = response.choices[0].message.content
+            
+            print(resp_str)
+            return resp_str
 
         else:
             print('No text recognized')
+            return None
+
+    def play(self, response):
+
+        audio = generate(
+            text=response,
+            voice="Stanley",
+            model="eleven_monolingual_v1"
+            )
+
+        play(audio)
+
 
     def run(self):
 
         text = self.listen()
-        self.request(text)
+        response = self.request(text)
+        self.play(response)
     
   
 if __name__ == '__main__':
