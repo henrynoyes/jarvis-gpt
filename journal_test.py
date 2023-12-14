@@ -16,10 +16,25 @@ class Jarvis():
     def __init__(self):
         self.client = OpenAI()
         # mixer.init()
-        # mixer.music.load('./welcome_back.mp3')
+        # mixer.music.load('./jarvis-startup.mp3')
         # mixer.music.set_volume(0.8)
-        self.notes_path = './notes.json'
+        self.journal_path = './journal.json'
         self.gpt_funcs = [
+            # {
+            #     'name': 'get_current_datetime',
+            #     'description': 'Get the current date and/or time',
+            #     'parameters': {
+            #         'type': 'object',
+            #         'properties': {
+            #             'mode': {
+            #                 'type': 'string',
+            #                 'enum': ['date', 'time', 'date & time'],
+            #                 'description': 'Choose whether to get date, time, or both',
+            #             }
+            #         },
+            #         'required': ['mode'],
+            #     },
+            # },
             {
                 'name': 'get_current_datetime',
                 'description': 'Get the current date and time',
@@ -58,46 +73,46 @@ class Jarvis():
                 },
             },
             {
-                'name': 'record_note',
-                'description': 'Record a note in the notes json file. Example: "Record a note that says {note}"',
+                'name': 'record_journal',
+                'description': 'Record an entry in the journal json file',
                 'parameters': {
                     'type': 'object',
                     'properties': {
-                        'note': {
+                        'entry': {
                             'type': 'string',
-                            'description': 'The note to record in the json file',
+                            'description': 'The entry to record in the json file',
                         }
                     },
-                    'required': ['note'],
+                    'required': ['entry'],
                 },
             },
             {
-                'name': 'read_note',
-                'description': 'Read a note from the notes json file. Notes are organized by date and time. Example: "Read me my notes from {date}"',
+                'name': 'read_journal',
+                'description': 'Read an entry from the journal json file. Entries are organized by date and time.',
                 'parameters': {
                     'type': 'object',
                     'properties': {
                         'date': {
                             'type': 'string',
-                            'description': f'The date label for the note. In the format "month-day-year". Today is {datetime.now().strftime("%m-%d-%Y")}',
+                            'description': f'The date label for the journal entry. In the format "month-day-year". Today is {datetime.now().strftime("%m-%d-%Y")}',
                         }
                     },
                     'required': ['date'],
                 },
             },
             {
-                'name': 'remove_note',
-                'description': 'Remove a note from the notes json file. Example: "Remove the first note from {date}"',
+                'name': 'remove_journal',
+                'description': 'Remove an entry from the journal json file',
                 'parameters': {
                     'type': 'object',
                     'properties': {
                         'date': {
                             'type': 'string',
-                            'description': f'The date label for the note. In the format "month-day-year". Today is {datetime.now().strftime("%m-%d-%Y")}',
+                            'description': f'The date label for the journal entry. In the format "month-day-year". Today is {datetime.now().strftime("%m-%d-%Y")}',
                         },
                         'index': {
                             'type': 'string',
-                            'description': 'The index for the note to be removed. Convert the positional string to a number. Example: First = 0, Second = 1, Third = 2, and so on.'
+                            'description': 'The index for the journal entry to be removed. Convert the positional string to a number. Example: First = 0, Second = 1, Third = 2, and so on.'
                         }
                     },
                     'required': ['date', 'index'],
@@ -105,11 +120,23 @@ class Jarvis():
             },
                 ]
         
-    def init_notes(self, notes_path):
-        if not os.path.exists(notes_path):
-            print('creating notes json')
-            with open(notes_path, 'w') as f:
+    def init_journal(self, journal_path):
+        if not os.path.exists(journal_path):
+            print('creating journal json')
+            with open(journal_path, 'w') as f:
                 json.dump(dict(), f)
+
+    # def get_current_datetime(self, mode='date & time'):
+    #     now = datetime.now()
+    #     date_str = now.strftime('%m-%d-%Y')
+    #     time_str = now.strftime('%I:%M:%S %p')  
+        
+    #     if mode == 'date':
+    #         return {'datetime': date_str}
+    #     elif mode == 'time':
+    #         return {'datetime': time_str}
+    #     else:
+    #         return {'datetime': f'{date_str} {time_str}'}
         
     def get_current_datetime(self):
         now = datetime.now()
@@ -150,60 +177,60 @@ class Jarvis():
 
         return forecast.to_dict()
     
-    def record_note(self, note):
+    def record_journal(self, entry):
         now = datetime.now()
         date_str = now.strftime('%m-%d-%Y')
         time_str = now.strftime('%I:%M:%S %p')
 
-        with open(self.notes_path, 'r') as f:
-            notes_dct = json.load(f)
+        with open(self.journal_path, 'r') as f:
+            journal_dct = json.load(f)
 
-        if date_str in notes_dct:
-            notes_dct[date_str][time_str] = note
+        if date_str in journal_dct:
+            journal_dct[date_str][time_str] = entry
         else:
-            notes_dct[date_str] = {time_str: note}
+            journal_dct[date_str] = {time_str: entry}
 
-        with open(self.notes_path, 'w') as f:
-            json.dump(notes_dct, f)
+        with open(self.journal_path, 'w') as f:
+            json.dump(journal_dct, f)
 
-        return {'status': 'complete', 'note': note}
+        return {'status': 'complete', 'entry': entry}
 
-    def read_note(self, date):
+    def read_journal(self, date):
         print(date)
 
-        with open(self.notes_path, 'r') as f:
-            notes_dct = json.load(f)
+        with open(self.journal_path, 'r') as f:
+            journal_dct = json.load(f)
 
         try:
-            return_dct = notes_dct[date]
+            return_dct = journal_dct[date]
             status = 'complete'
 
         except:
-            return_dct = notes_dct
-            status = 'error'
+            return_dct = journal_dct
+            status = 'error: no journal entry found'
 
-        return {'status': status, 'notes': return_dct}
+        return {'status': status, 'journal': return_dct}
 
-    def remove_note(self, date, index):
+    def remove_journal(self, date, index):
         print(date, index)
 
-        with open(self.notes_path, 'r') as f:
-            notes_dct = json.load(f)
+        with open(self.journal_path, 'r') as f:
+            journal_dct = json.load(f)
         
-        old_notes = notes_dct.copy()
+        old_journal = journal_dct.copy()
 
         try:
-            time = list(notes_dct[date])[int(index)]
-            notes_dct[date].pop(time)
+            time = list(journal_dct[date])[int(index)]
+            journal_dct[date].pop(time)
             status = 'complete'
 
-            with open(self.notes_path, 'w') as f:
-                json.dump(notes_dct, f)
+            with open(self.journal_path, 'w') as f:
+                json.dump(journal_dct, f)
 
         except:
-            status = 'error: no note found'        
+            status = 'error: no journal entry found'        
 
-        return {'status': status, 'old notes': old_notes[date], 'updated notes': notes_dct[date]}
+        return {'status': status, 'old journal': old_journal[date], 'updated journal': journal_dct[date]}
 
     def listen(self):
         
@@ -231,9 +258,9 @@ class Jarvis():
             'get_current_datetime': self.get_current_datetime,
             'get_current_weather': self.get_current_weather,
             'get_future_weather': self.get_future_weather,
-            'record_note': self.record_note,
-            'read_note': self.read_note,
-            'remove_note': self.remove_note
+            'record_journal': self.record_journal,
+            'read_journal': self.read_journal,
+            'remove_journal': self.remove_journal
         }
 
         if text:
@@ -241,7 +268,7 @@ class Jarvis():
 
             msgs = [{'role': 'system', 'content': 'You are a helpful assistant named Jarvis. Address the user with Sir. You can access the current date and time using get_current_datetime. \
                      You can access current weather information using get_current_weather. You can access weather forecasts up to 8 days in the future using get_future_weather. Do not ask the user for a location. \
-                     Always report weather information in imperial units. You can read notes using read_note. You can record notes using record_note. You can remove notes using remove_note.'},
+                     Always report weather information in imperial units. You can read journal entries using read_journal. You can record journal entries using record_journal. You can remove journal entries using remove_journal.'},
                         {'role': 'user', 'content': text}]
 
             response = self.client.chat.completions.create(
@@ -285,23 +312,23 @@ class Jarvis():
         
         print('Generating audio...')
 
-        jv_voice = Voice.from_id(os.getenv('JARVIS_VOICEID'))
+        # jv_voice = Voice.from_id(os.getenv('JARVIS_VOICEID'))
 
-        audio = generate(
-            text=response,
-            voice=jv_voice,
-            model='eleven_multilingual_v2',
-            stream=True
-            )
+        # audio = generate(
+        #     text=response,
+        #     voice=jv_voice,
+        #     model='eleven_multilingual_v2',
+        #     stream=True
+        #     )
         
-        print('Playing audio...')
-        stream(audio)
+        # print('Playing audio...')
+        # stream(audio)
 
     def run(self):
 
         # mixer.music.play()
-        # time.sleep(8)
-        self.init_notes(self.notes_path)
+        # time.sleep(15)
+        self.init_journal(self.journal_path)
         text = self.listen()
         response = self.request(text)
         self.play(response)
