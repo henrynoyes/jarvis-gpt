@@ -51,3 +51,4 @@ To ensure privacy, all personal information such as API keys are stored locally 
 - Allow multiple exchanges with historical context, more like ChatGPT (ex: "Read me my notes from yesterday" $\rightarrow$ "Delete the second one")
 - Replace startup mp3 with custom message detailing date, time, and weather
 - Replace local notetaking functionality with a cloud-based application that can be accessed from other devices (mobile/PC)
+- Integrate text-to-3D-models using [Shape-E](https://github.com/openai/shap-e) ("Hey JARVIS, make me a 3D model of ...") $\vert$ Long term: text-to-CAD? ("Hey JARVIS, create a CAD model of a box with dimensions ... Add a cylinder on top with dimensions ... and position it ...")
