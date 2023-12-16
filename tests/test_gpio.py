@@ -1,9 +1,7 @@
-import RPi.GPIO as GPIO
+from grove.gpio import GPIO
 
-GPIO.setwarnings(False) 
-GPIO.setmode(GPIO.BOARD) 
-GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+button = GPIO(12, GPIO.IN)
 
 while True:
-    if GPIO.input(12) == GPIO.HIGH:
+    if button.read():
         print('pressed')
