@@ -1,7 +1,9 @@
-from gpiozero import Button
+import RPi.GPIO as GPIO
 
-button = Button(pin=12)
+GPIO.setwarnings(False) 
+GPIO.setmode(GPIO.BOARD) 
+GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 while True:
-    if button.is_pressed:
+    if GPIO.input(12) == GPIO.HIGH:
         print('pressed')
