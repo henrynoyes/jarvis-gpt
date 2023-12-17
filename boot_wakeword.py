@@ -8,8 +8,6 @@ import apa102
 from gpiozero import LED
 import time
 
-jv = Jarvis()
-
 porcupine = pvporcupine.create(access_key=os.getenv('PICOVOICE_API_KEY'), keywords=['jarvis'])
 recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 
@@ -31,6 +29,8 @@ try:
     driver.cleanup()
     power.off()
     power.close()
+    
+    jv = Jarvis()
     
     recorder.start()
     print('JARVIS activated')

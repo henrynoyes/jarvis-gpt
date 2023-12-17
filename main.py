@@ -5,7 +5,7 @@ from openai import OpenAI
 from elevenlabs import generate, stream
 from elevenlabs.api import Voice
 from gpiozero import LED
-import apa102
+from apa102 import APA102
 import sounddevice
 from datetime import datetime
 import json
@@ -16,6 +16,8 @@ class Jarvis():
     def __init__(self):
         self.client = OpenAI()
         self.notes_path = './notes.json'
+        self.driver = APA102(num_led=12)
+        self.power = LED(5)
         self.func_dct = {
             'get_current_datetime': self.get_current_datetime,
             'get_current_weather': self.get_current_weather,
@@ -212,9 +214,9 @@ class Jarvis():
 
     def listen(self):
 
-        driver = apa102.APA102(num_led=12)
-        power = LED(5)
-        power.on()
+#         driver = apa102.APA102(num_led=12)
+#         power = LED(5)
+#         power.on()
         
         r = sr.Recognizer()
         with sr.Microphone() as source:
@@ -222,12 +224,13 @@ class Jarvis():
             r.adjust_for_ambient_noise(source)
             print("Listening...")
         
+            self.power.on()
             for i in range(12):
-                driver.set_pixel(i, 255, 100, 0)
-            driver.show()
+                self.driver.set_pixel(i, 255, 100, 0)
+            self.driver.show()
             
             audio = r.listen(source)
-            driver.clear_strip()
+            self.driver.clear_strip()
 
         try:
             print('Recognizing...')
@@ -288,12 +291,9 @@ class Jarvis():
 
     def play(self, response):
         
-        driver = apa102.APA102(num_led=12)
         for i in range(12):
-            driver.set_pixel(i, 10, 100, 10)
-        driver.show()
-        power = LED(5)
-        power.on()
+            self.driver.set_pixel(i, 10, 100, 10)
+        self.driver.show()
         
         print('Generating audio...')
 
@@ -309,7 +309,8 @@ class Jarvis():
         print('Playing audio...')
         stream(audio)
 
-        driver.clear_strip()
+        self.driver.clear_strip()
+        self.power.off()
 
 
     def run(self):
