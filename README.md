@@ -40,6 +40,7 @@ To ensure privacy, all personal information such as API keys are stored locally 
 - OPENAI_API_KEY - Used for all queries to GPT models. Find it [here](https://help.openai.com/en/articles/4936850-where-do-i-find-my-api-key)
 - ELEVEN_API_KEY - Used for all TTS. Find it [here](https://elevenlabs.io/docs/api-reference/text-to-speech#authentication)
 - OWM_API_KEY - Used for the `get_current_weather` and `get_future_weather` functions. Find it [here](https://openweathermap.org/appid#signup)
+- PICOVOICE_API_KEY - Used for wakeword activation. Find it [here](https://picovoice.ai/docs/quick-start/picovoice-python/#picovoice-account--accesskey)
 - JARVIS_LOCATION - Used as the default location for the `get_current_weather` and `get_future_weather` functions. In the form `'city,state,US'` for US cities and `'city,country'` for elsewhere. Ex: `'Phoenix,AZ,US'` or `'London,GB'`
 - JARVIS_VOICEID - Used for all TTS. Find the list of voices [here](https://github.com/elevenlabs/elevenlabs-python/blob/main/API.md#voices-1).
 
