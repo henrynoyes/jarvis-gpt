@@ -1,7 +1,10 @@
-from grove.gpio import GPIO
+import RPi.GPIO as GPIO
+import time
 
-button = GPIO(12, GPIO.IN)
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(13, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 while True:
-    if button.read():
-        print('pressed')
+
+	print(GPIO.input(13))
+	time.sleep(0.5)
