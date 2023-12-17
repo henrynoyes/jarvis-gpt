@@ -19,6 +19,14 @@ class Jarvis():
         # mixer.music.load('./welcome_back.mp3')
         # mixer.music.set_volume(0.8)
         self.notes_path = './notes.json'
+        self.func_dct = {
+            'get_current_datetime': self.get_current_datetime,
+            'get_current_weather': self.get_current_weather,
+            'get_future_weather': self.get_future_weather,
+            'record_note': self.record_note,
+            'read_note': self.read_note,
+            'remove_note': self.remove_note
+        }
         self.gpt_funcs = [
             {
                 'name': 'get_current_datetime',
@@ -227,15 +235,6 @@ class Jarvis():
         
     def request(self, text):
 
-        func_dct = {
-            'get_current_datetime': self.get_current_datetime,
-            'get_current_weather': self.get_current_weather,
-            'get_future_weather': self.get_future_weather,
-            'record_note': self.record_note,
-            'read_note': self.read_note,
-            'remove_note': self.remove_note
-        }
-
         if text:
             print('Responding...')
 
@@ -255,7 +254,7 @@ class Jarvis():
             if resp_msg.function_call:
                 func_name = resp_msg.function_call.name
                 func_args = json.loads(resp_msg.function_call.arguments)
-                func_to_call = func_dct[func_name]
+                func_to_call = self.func_dct[func_name]
                 func_response = func_to_call(**func_args)
                 print(f'Calling {func_name}...')
 
