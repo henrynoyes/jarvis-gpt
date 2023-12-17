@@ -223,7 +223,7 @@ class Jarvis():
             print("Listening...")
         
             for i in range(12):
-                driver.set_pixel(i, 255, 153, 75)
+                driver.set_pixel(i, 255, 100, 0)
             driver.show()
             
             audio = r.listen(source)
@@ -290,7 +290,7 @@ class Jarvis():
         
         driver = apa102.APA102(num_led=12)
         for i in range(12):
-            driver.set_pixel(i, 120, 255, 120)
+            driver.set_pixel(i, 10, 100, 10)
         driver.show()
         power = LED(5)
         power.on()
