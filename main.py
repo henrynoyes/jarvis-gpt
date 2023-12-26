@@ -4,27 +4,31 @@ import speech_recognition as sr
 from openai import OpenAI
 from elevenlabs import generate, stream
 from elevenlabs.api import Voice
+import time
 from gpiozero import LED
 from apa102 import APA102
 import sounddevice
 from datetime import datetime
 import json
 from pyowm.owm import OWM
+from phue import Bridge
 
 class Jarvis():
 
     def __init__(self):
         self.client = OpenAI()
         self.notes_path = './notes.json'
-        self.driver = APA102(num_led=12)
-        self.power = LED(5)
+        self.led_driver = APA102(num_led=12)
+        self.led_power = LED(5)
+        self.bridge = Bridge(os.getenv('PHUE_IP'))
         self.func_dct = {
             'get_current_datetime': self.get_current_datetime,
             'get_current_weather': self.get_current_weather,
             'get_future_weather': self.get_future_weather,
             'record_note': self.record_note,
             'read_note': self.read_note,
-            'remove_note': self.remove_note
+            'remove_note': self.remove_note,
+            'power_lights': self.power_lights
         }
         self.gpt_funcs = [
             {
@@ -110,7 +114,30 @@ class Jarvis():
                     'required': ['date', 'index'],
                 },
             },
+            {
+                'name': 'power_lights',
+                'description': 'Turn the lights on or off',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'state': {
+                            'type': 'string',
+                            'enum': ['on', 'off'],
+                            'description': 'The desired state of the lights',
+                        }
+                    },
+                    'required': ['state'],
+                },
+            },
                 ]
+    
+    def boot_pattern(self):
+        self.led_power.on()
+        for i in range(12):
+            self.led_driver.set_pixel(i, 0, 255, 255)
+            self.led_driver.show()
+            time.sleep(0.66)
+        self.led_driver.clear_strip()
     
     def init_notes(self, notes_path):
         if not os.path.exists(notes_path):
@@ -211,12 +238,18 @@ class Jarvis():
             status = 'error: no note found'        
 
         return {'status': status, 'old notes': old_notes[date], 'updated notes': notes_dct[date]}
+    
+    def power_lights(self, state):
+        print(state)
+
+        if state == 'on':
+            bool_state = True
+        else:
+            bool_state == False
+
+        self.bridge.set_lights('pixar', 'on', bool_state)
 
     def listen(self):
-
-#         driver = apa102.APA102(num_led=12)
-#         power = LED(5)
-#         power.on()
         
         r = sr.Recognizer()
         with sr.Microphone() as source:
@@ -224,13 +257,12 @@ class Jarvis():
             r.adjust_for_ambient_noise(source)
             print("Listening...")
         
-            self.power.on()
             for i in range(12):
-                self.driver.set_pixel(i, 255, 100, 0)
-            self.driver.show()
+                self.led_driver.set_pixel(i, 255, 100, 0)
+            self.led_driver.show()
             
             audio = r.listen(source)
-            self.driver.clear_strip()
+            self.led_driver.clear_strip()
 
         try:
             print('Recognizing...')
@@ -292,8 +324,8 @@ class Jarvis():
     def play(self, response):
         
         for i in range(12):
-            self.driver.set_pixel(i, 10, 100, 10)
-        self.driver.show()
+            self.led_driver.set_pixel(i, 10, 100, 10)
+        self.led_driver.show()
         
         print('Generating audio...')
 
@@ -309,8 +341,8 @@ class Jarvis():
         print('Playing audio...')
         stream(audio)
 
-        self.driver.clear_strip()
-        self.power.off()
+        self.led_driver.clear_strip()
+        self.led_power.off()
 
 
     def run(self):
