@@ -136,12 +136,12 @@ class Jarvis():
                 'parameters': {
                     'type': 'object',
                     'properties': {
-                        'brightness_percent': {
+                        'desired_percent': {
                             'type': 'string',
-                            'description': 'The brightness percentage number as an integer',
+                            'description': 'The desired brightness percentage number as an integer',
                         }
                     },
-                    'required': ['brightness_percent'],
+                    'required': ['desired_percent'],
                 },
             },
                 ]
@@ -274,6 +274,11 @@ class Jarvis():
         desired_bri = int(int(desired_percent) * 2.54)
 
         print(desired_bri)
+        
+        power_status = self.bridge.get_light('pixar', 'on')
+        if not power_status:
+            print('off error')
+            return {'status': 'Error: The light is not on'}
 
         if desired_bri < 0 or desired_bri > 254:
             return {'status': 'Error: The requested brightness is not valid', 'brightness': desired_percent}
@@ -319,7 +324,7 @@ class Jarvis():
 
             msgs = [{'role': 'system', 'content': 'You are a helpful assistant named Jarvis. Address the user with Sir. You can access the current date and time using get_current_datetime. \
                      You can access current weather information using get_current_weather. You can access weather forecasts up to 8 days in the future using get_future_weather. Do not ask the user for a location. \
-                     Always report weather information in imperial units. You can read notes using read_note. You can record notes using record_note. You can remove notes using remove_note.'},
+                     Always report weather information in imperial units. You can read notes using read_note. You can record notes using record_note. You can remove notes using remove_note. You can turn the lights on/off using power_lights. You can change the light brightness using change_brightness. ALWAYS BE CONCISE.'},
                         {'role': 'user', 'content': text}]
 
             response = self.client.chat.completions.create(
