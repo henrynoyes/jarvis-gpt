@@ -245,12 +245,14 @@ class Jarvis():
         if state == 'on':
             bool_state = True
         else:
-            bool_state == False
+            bool_state = False
 
-        self.bridge.set_lights('pixar', 'on', bool_state)
+        self.bridge.set_light('pixar', 'on', bool_state)
 
+        return {'status': 'complete', 'state': state}
     def listen(self):
         
+        self.led_power.on()
         r = sr.Recognizer()
         with sr.Microphone() as source:
             # ambient adjustment causes longer delay
