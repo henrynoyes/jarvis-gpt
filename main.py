@@ -28,7 +28,8 @@ class Jarvis():
             'record_note': self.record_note,
             'read_note': self.read_note,
             'remove_note': self.remove_note,
-            'power_lights': self.power_lights
+            'power_lights': self.power_lights,
+            'change_brightness': self.change_brightness
         }
         self.gpt_funcs = [
             {
@@ -120,13 +121,27 @@ class Jarvis():
                 'parameters': {
                     'type': 'object',
                     'properties': {
-                        'state': {
+                        'desired_state': {
                             'type': 'string',
                             'enum': ['on', 'off'],
                             'description': 'The desired state of the lights',
                         }
                     },
-                    'required': ['state'],
+                    'required': ['desired_state'],
+                },
+            },
+            {
+                'name': 'change_brightness',
+                'description': 'Change the brightness of the lights',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'brightness_percent': {
+                            'type': 'string',
+                            'description': 'The brightness percentage number as an integer',
+                        }
+                    },
+                    'required': ['brightness_percent'],
                 },
             },
                 ]
@@ -242,22 +257,34 @@ class Jarvis():
     def power_lights(self, desired_state):
         print(desired_state)
 
+        bool_dct = {'on': True, 'off': False}
+        bool_state = bool_dct[desired_state]
+
         current_state = self.bridge.get_light('pixar', 'on')
-
-        if desired_state == current_state:
+        if bool_state == current_state:
             return {'status': f'The light is already {desired_state}', 'state': desired_state}
-
-        if desired_state == 'on':
-            bool_state = True
-        else:
-            bool_state = False
 
         self.bridge.set_light('pixar', 'on', bool_state)
 
         return {'status': 'complete', 'state': desired_state}
     
-    def change_brightness(self, desired_pct):
+    def change_brightness(self, desired_percent):
+        print(desired_percent)
 
+        desired_bri = int(int(desired_percent) * 2.54)
+
+        print(desired_bri)
+
+        if desired_bri < 0 or desired_bri > 254:
+            return {'status': 'Error: The requested brightness is not valid', 'brightness': desired_percent}
+
+        current_bri = self.bridge.get_light('pixar', 'bri')
+        if desired_bri == current_bri:
+            return {'status': f'The light is already at {desired_percent} percent brightness', 'brightness': desired_percent}
+
+        self.bridge.set_light('pixar', 'bri', desired_bri)
+
+        return {'status': 'complete', 'brightness': desired_percent}
     
     def listen(self):
         
