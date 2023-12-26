@@ -239,17 +239,26 @@ class Jarvis():
 
         return {'status': status, 'old notes': old_notes[date], 'updated notes': notes_dct[date]}
     
-    def power_lights(self, state):
-        print(state)
+    def power_lights(self, desired_state):
+        print(desired_state)
 
-        if state == 'on':
+        current_state = self.bridge.get_light('pixar', 'on')
+
+        if desired_state == current_state:
+            return {'status': f'The light is already {desired_state}', 'state': desired_state}
+
+        if desired_state == 'on':
             bool_state = True
         else:
             bool_state = False
 
         self.bridge.set_light('pixar', 'on', bool_state)
 
-        return {'status': 'complete', 'state': state}
+        return {'status': 'complete', 'state': desired_state}
+    
+    def change_brightness(self, desired_pct):
+
+    
     def listen(self):
         
         self.led_power.on()
