@@ -10,6 +10,7 @@ from apa102 import APA102
 import sounddevice
 from datetime import datetime
 import json
+import yaml
 from pyowm.owm import OWM
 from phue import Bridge
 
@@ -146,7 +147,13 @@ class Jarvis():
             },
                 ]
     
-    def boot_pattern(self):
+    def startup(self):
+
+        with open('./config.yaml', 'r') as f:
+            cfg_dct = yaml.safe_load(f)
+
+            print(cfg_dct)
+
         self.led_power.on()
         for i in range(12):
             self.led_driver.set_pixel(i, 0, 255, 255)
