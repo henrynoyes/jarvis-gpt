@@ -118,17 +118,22 @@ class Jarvis():
             },
             {
                 'name': 'power_lights',
-                'description': 'Turn the lights on or off',
+                'description': 'Turn the desired lights on or off',
                 'parameters': {
                     'type': 'object',
                     'properties': {
+                        'desired_light': {
+                            'type': 'string',
+                            'enum': ['pixar', 'green', 'all'],
+                            'description': 'The desired lights to turn on/off. Choose "all" if no light name is specified.',
+                        },
                         'desired_state': {
                             'type': 'string',
                             'enum': ['on', 'off'],
                             'description': 'The desired state of the lights',
                         }
                     },
-                    'required': ['desired_state'],
+                    'required': ['desired_light', 'desired_state'],
                 },
             },
             {
@@ -137,12 +142,17 @@ class Jarvis():
                 'parameters': {
                     'type': 'object',
                     'properties': {
+                        'desired_light': {
+                            'type': 'string',
+                            'enum': ['pixar', 'green', 'all'],
+                            'description': 'The desired lights to change. Choose "all" if no light name is specified.',
+                        },
                         'desired_percent': {
                             'type': 'string',
                             'description': 'The desired brightness percentage number as an integer',
                         }
                     },
-                    'required': ['desired_percent'],
+                    'required': ['desired_light', 'desired_percent'],
                 },
             },
                 ]
@@ -152,7 +162,10 @@ class Jarvis():
         with open('./config.yaml', 'r') as f:
             cfg_dct = yaml.safe_load(f)
 
-            print(cfg_dct)
+            if cfg_dct['default_lights']:
+                self.power_lights(cfg_dct['default_lights'], 'on')
+                self.change_brightness(cfg_dct['default_lights'], cfg_dct['default_brightness'])
+
 
         self.led_power.on()
         for i in range(12):
@@ -261,40 +274,52 @@ class Jarvis():
 
         return {'status': status, 'old notes': old_notes[date], 'updated notes': notes_dct[date]}
     
-    def power_lights(self, desired_state):
-        print(desired_state)
+    def power_lights(self, desired_light, desired_state):
+        print(desired_light, desired_state)
 
         bool_dct = {'on': True, 'off': False}
         bool_state = bool_dct[desired_state]
 
-        current_state = self.bridge.get_light('pixar', 'on')
-        if bool_state == current_state:
-            return {'status': f'The light is already {desired_state}', 'state': desired_state}
+        light_dct = self.bridge.get_light_objects('name')
 
-        self.bridge.set_light('pixar', 'on', bool_state)
+        name_lst = [desired_light]
+        if desired_light =='all':
+            name_lst = light_dct.keys()
+
+        for name in name_lst:
+            current_state = light_dct[name].on
+            if bool_state == current_state:
+                return {'status': f'The {name} light is already {desired_state}', 'state': desired_state}
+            light_dct[name].on = True
 
         return {'status': 'complete', 'state': desired_state}
     
-    def change_brightness(self, desired_percent):
-        print(desired_percent)
+    def change_brightness(self, desired_light, desired_percent):
+        print(desired_light, desired_percent)
 
         desired_bri = int(int(desired_percent) * 2.54)
 
         print(desired_bri)
-        
-        power_status = self.bridge.get_light('pixar', 'on')
-        if not power_status:
-            print('off error')
-            return {'status': 'Error: The light is not on'}
 
         if desired_bri < 0 or desired_bri > 254:
             return {'status': 'Error: The requested brightness is not valid', 'brightness': desired_percent}
+        
+        light_dct = self.bridge.get_light_objects('name')
 
-        current_bri = self.bridge.get_light('pixar', 'bri')
-        if desired_bri == current_bri:
-            return {'status': f'The light is already at {desired_percent} percent brightness', 'brightness': desired_percent}
+        name_lst = [desired_light]
+        if desired_light =='all':
+            name_lst = light_dct.keys()
 
-        self.bridge.set_light('pixar', 'bri', desired_bri)
+        for name in name_lst:
+            power_status = light_dct[name].on
+            if not power_status:
+                return {'status': f'Error: The {name} light is not on'}
+
+            current_bri = light_dct[name].brightness
+            if desired_bri == current_bri:
+                return {'status': f'The {name} light is already at {desired_percent} percent brightness', 'brightness': desired_percent}
+
+            light_dct[name].brightness = desired_bri
 
         return {'status': 'complete', 'brightness': desired_percent}
     
