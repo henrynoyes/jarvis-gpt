@@ -290,7 +290,7 @@ class Jarvis():
             current_state = light_dct[name].on
             if bool_state == current_state:
                 return {'status': f'The {name} light is already {desired_state}', 'state': desired_state}
-            light_dct[name].on = True
+            light_dct[name].on = bool_state
 
         return {'status': 'complete', 'state': desired_state}
     
