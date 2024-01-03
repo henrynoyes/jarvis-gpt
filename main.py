@@ -14,6 +14,9 @@ import yaml
 from pyowm.owm import OWM
 from phue import Bridge
 
+class Shutdown(Exception):
+    pass
+
 class Jarvis():
 
     def __init__(self):
@@ -22,7 +25,9 @@ class Jarvis():
         self.led_driver = APA102(num_led=12)
         self.led_power = LED(5)
         self.bridge = Bridge(os.getenv('PHUE_IP'))
+        self.owm = OWM(os.getenv('OWM_API_KEY'))
         self.func_dct = {
+            'shutdown': self.shutdown,
             'get_current_datetime': self.get_current_datetime,
             'get_current_weather': self.get_current_weather,
             'get_future_weather': self.get_future_weather,
@@ -33,6 +38,10 @@ class Jarvis():
             'change_brightness': self.change_brightness
         }
         self.gpt_funcs = [
+            {
+                'name': 'shutdown',
+                'description': 'Begin shutdown sequence',
+            },
             {
                 'name': 'get_current_datetime',
                 'description': 'Get the current date and time',
@@ -166,14 +175,24 @@ class Jarvis():
                 self.power_lights(cfg_dct['default_lights'], 'on')
                 self.change_brightness(cfg_dct['default_lights'], cfg_dct['default_brightness'])
 
-
         self.led_power.on()
         for i in range(12):
             self.led_driver.set_pixel(i, 0, 255, 255)
             self.led_driver.show()
             time.sleep(0.66)
         self.led_driver.clear_strip()
-    
+
+    def shutdown(self):
+        
+        with open('./config.yaml', 'r') as f:
+            cfg_dct = yaml.safe_load(f)
+
+            if cfg_dct['shutdown_lights']:
+                self.power_lights(cfg_dct['shutdown_lights'], 'off')
+
+        print('raising exception')
+        raise Exception
+        
     def init_notes(self, notes_path):
         if not os.path.exists(notes_path):
             print('creating notes json')
@@ -191,12 +210,10 @@ class Jarvis():
 
         print(loc)
 
-        owm = OWM(os.getenv('OWM_API_KEY'))
-
-        coder = owm.geocoding_manager()
+        coder = self.owm.geocoding_manager()
         loc_info = coder.geocode(loc)[0]
 
-        mgr = owm.weather_manager()
+        mgr = self.owm.weather_manager()
         info = mgr.one_call(lon=loc_info.lon, lat=loc_info.lat, units='imperial', exclude=['minutely', 'hourly', 'daily', 'alerts'])
 
         forecast = info.current
@@ -207,12 +224,10 @@ class Jarvis():
 
         print(days, loc)
 
-        owm = OWM(os.getenv('OWM_API_KEY'))
-
-        coder = owm.geocoding_manager()
+        coder = self.owm.geocoding_manager()
         loc_info = coder.geocode(loc)[0]
 
-        mgr = owm.weather_manager()
+        mgr = self.owm.weather_manager()
         info = mgr.one_call(lon=loc_info.lon, lat=loc_info.lat, units='imperial', exclude=['minutely', 'hourly', 'alerts'])
 
         forecast = info.forecast_daily[int(days)]
@@ -292,7 +307,7 @@ class Jarvis():
                 return {'status': f'The {name} light is already {desired_state}', 'state': desired_state}
             light_dct[name].on = bool_state
 
-        return {'status': 'complete', 'state': desired_state}
+        return None
     
     def change_brightness(self, desired_light, desired_percent):
         print(desired_light, desired_percent)
@@ -321,7 +336,7 @@ class Jarvis():
 
             light_dct[name].brightness = desired_bri
 
-        return {'status': 'complete', 'brightness': desired_percent}
+        return None
     
     def listen(self):
         
@@ -346,34 +361,34 @@ class Jarvis():
             return text
 
         except sr.RequestError as e:
-            print(f'error {e}')
+            print(f'recognition error {e}')
             return None
         
     def request(self, text):
 
-        if text:
-            print('Responding...')
+        print('Responding...')
 
-            msgs = [{'role': 'system', 'content': 'You are a helpful assistant named Jarvis. Address the user with Sir. You can access the current date and time using get_current_datetime. \
-                     You can access current weather information using get_current_weather. You can access weather forecasts up to 8 days in the future using get_future_weather. Do not ask the user for a location. \
-                     Always report weather information in imperial units. You can read notes using read_note. You can record notes using record_note. You can remove notes using remove_note. You can turn the lights on/off using power_lights. You can change the light brightness using change_brightness. ALWAYS BE CONCISE.'},
-                        {'role': 'user', 'content': text}]
+        msgs = [{'role': 'system', 'content': 'You are a helpful assistant named Jarvis. Address the user with Sir. You can access the current date and time using get_current_datetime. \
+                    You can access current weather information using get_current_weather. You can access weather forecasts up to 8 days in the future using get_future_weather. Do not ask the user for a location. \
+                    Always report weather information in imperial units. You can read notes using read_note. You can record notes using record_note. You can remove notes using remove_note. You can turn the lights on/off using power_lights. You can change the light brightness using change_brightness. ALWAYS BE CONCISE.'},
+                    {'role': 'user', 'content': text}]
 
-            response = self.client.chat.completions.create(
-                model='gpt-3.5-turbo',
-                messages=msgs,
-                functions=self.gpt_funcs,
-                function_call='auto')
-            
-            resp_msg = response.choices[0].message
+        response = self.client.chat.completions.create(
+            model='gpt-3.5-turbo',
+            messages=msgs,
+            functions=self.gpt_funcs,
+            function_call='auto')
+        
+        resp_msg = response.choices[0].message
 
-            if resp_msg.function_call:
-                func_name = resp_msg.function_call.name
-                func_args = json.loads(resp_msg.function_call.arguments)
-                func_to_call = self.func_dct[func_name]
-                func_response = func_to_call(**func_args)
-                print(f'Calling {func_name}...')
+        if resp_msg.function_call:
+            func_name = resp_msg.function_call.name
+            func_args = json.loads(resp_msg.function_call.arguments)
+            func_to_call = self.func_dct[func_name]
 
+            print(f'Calling {func_name}...')
+            func_response = func_to_call(**func_args)
+            if func_response:
                 msgs.append(
                     {
                         "role": "function",
@@ -389,13 +404,9 @@ class Jarvis():
                 
                 resp_msg = response.choices[0].message
             
-            print(resp_msg.content)
-            return resp_msg.content
-
-        else:
-            print('No text recognized')
-            return None
-
+        print(resp_msg.content)
+        return resp_msg.content
+        
     def play(self, response):
         
         for i in range(12):
@@ -419,16 +430,10 @@ class Jarvis():
         self.led_driver.clear_strip()
         self.led_power.off()
 
-
     def run(self):
 
         self.init_notes(self.notes_path)
         text = self.listen()
-        response = self.request(text)
-        self.play(response)
-    
-
-if __name__ == '__main__':
-
-    jv = Jarvis()
-    jv.run()
+        if text:
+            response = self.request(text)
+            self.play(response)

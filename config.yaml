@@ -1,2 +1,3 @@
-default_lights: all
-default_brightness: 50
+startup_lights: all
+startuo_brightness: 50
+shutdown_lights: all

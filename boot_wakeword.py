@@ -2,7 +2,7 @@ import pvporcupine
 from pvrecorder import PvRecorder
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-from main import Jarvis
+from main import Jarvis, Shutdown
 from pygame import mixer
 import time
 
@@ -26,8 +26,14 @@ try:
         
         if idx >= 0:
             jv.run()
-            
+
+except Shutdown:
+    recorder.stop()
+    mixer.music.load('./media/shutting_down.mp3')
+    mixer.music.play()
+
 except KeyboardInterrupt:
     recorder.stop()
+    
 finally:
     porcupine.delete()
