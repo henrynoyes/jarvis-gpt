@@ -171,9 +171,9 @@ class Jarvis():
         with open('./config.yaml', 'r') as f:
             cfg_dct = yaml.safe_load(f)
 
-            if cfg_dct['default_lights']:
-                self.power_lights(cfg_dct['default_lights'], 'on')
-                self.change_brightness(cfg_dct['default_lights'], cfg_dct['default_brightness'])
+            if cfg_dct['startup_lights']:
+                self.power_lights(cfg_dct['startup_lights'], 'on')
+                self.change_brightness(cfg_dct['startup_lights'], cfg_dct['startup_brightness'])
 
         self.led_power.on()
         for i in range(12):
