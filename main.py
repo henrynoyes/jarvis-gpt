@@ -343,30 +343,30 @@ class Jarvis():
         self.led_power.on()
         r = sr.Recognizer()
         with sr.Microphone() as source:
-            # ambient adjustment causes longer delay
-            r.adjust_for_ambient_noise(source)
-            print("Listening...")
-        
-            for i in range(12):
-                self.led_driver.set_pixel(i, 255, 100, 0)
-            self.led_driver.show()
+            try:
+                # ambient adjustment causes longer delay
+                r.adjust_for_ambient_noise(source)
+                print("Listening...")
             
-            audio = r.listen(source, timeout=6)
-            self.led_driver.clear_strip()
+                for i in range(12):
+                    self.led_driver.set_pixel(i, 255, 100, 0)
+                self.led_driver.show()
+                
+                audio = r.listen(source, timeout=10)
+                self.led_driver.clear_strip()
 
-        try:
-            print('Recognizing...')
-            text = r.recognize_google(audio)
-            print(text)
-            return text
+                print('Recognizing...')
+                text = r.recognize_google(audio)
+                print(text)
+                return text
 
-        except sr.WaitTimeoutError:
-            print('timed out')
-            return None
+            except sr.WaitTimeoutError:
+                print('timed out')
+                return None
 
-        except:
-            print(f'other exception')
-            return None
+            except:
+                print(f'other exception')
+                return None
         
     def request(self, text):
 
