@@ -191,7 +191,7 @@ class Jarvis():
                 self.power_lights(cfg_dct['shutdown_lights'], 'off')
 
         print('raising exception')
-        raise Exception
+        raise Shutdown
         
     def init_notes(self, notes_path):
         if not os.path.exists(notes_path):
