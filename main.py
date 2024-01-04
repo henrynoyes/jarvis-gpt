@@ -352,7 +352,7 @@ class Jarvis():
                     self.led_driver.set_pixel(i, 255, 100, 0)
                 self.led_driver.show()
                 
-                audio = r.listen(source, timeout=10)
+                audio = r.listen(source, timeout=6)
                 self.led_driver.clear_strip()
 
                 print('Recognizing...')
@@ -361,11 +361,12 @@ class Jarvis():
                 return text
 
             except sr.WaitTimeoutError:
+                self.led_driver.clear_strip()
                 print('timed out')
                 return None
 
             except:
-                print(f'other exception')
+                print(f'no text recognized')
                 return None
         
     def request(self, text):
