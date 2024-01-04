@@ -31,9 +31,10 @@ except Shutdown:
     recorder.stop()
     mixer.music.load('./media/shutting_down.mp3')
     mixer.music.play()
+    time.sleep(2)
 
 except KeyboardInterrupt:
     recorder.stop()
-    
+
 finally:
     porcupine.delete()
