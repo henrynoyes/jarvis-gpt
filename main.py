@@ -441,4 +441,5 @@ class Jarvis():
         text = self.listen()
         if text:
             response = self.request(text)
-            self.play(response)
+            if response:
+                self.play(response)
