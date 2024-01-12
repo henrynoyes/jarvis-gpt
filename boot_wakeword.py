@@ -1,7 +1,6 @@
 import pvporcupine
 from pvrecorder import PvRecorder
 import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 from main import Jarvis, Shutdown
 from pygame import mixer
 import time
