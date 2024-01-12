@@ -26,7 +26,7 @@ And perhaps it is just a glorified DIY Alexa... but at least, in my opinion, it 
 The main hardware consists of a Raspberry Pi 4B with a [Respeaker 4-mic Array Hat](https://wiki.seeedstudio.com/ReSpeaker_4_Mic_Array_for_Raspberry_Pi/) for audio detection. These components are housed in a 3D-printed enclosure, with openings for the microphones and LEDs. The design of the enclosure was inspired by the Arc Reactor and the red/silver PLA was chosen to match the colorway of the MK5 suit. The audio is output through the 3.5mm jack to an amplifier that is connected to two wall-mounted speakers.
 
 <div align='center'>
-<img src='media/closeup-reactor.png' height='300'> <img src='media/printed-reactor.JPG' height='300'> 
+<img src='media/closeup-reactor.png' height='250'> <img src='media/printed-reactor.JPG' height='250'> 
 </div>
 
 
