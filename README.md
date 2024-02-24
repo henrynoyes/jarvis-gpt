@@ -15,14 +15,19 @@ In addition to the conversational abilities of OpenAI's GPT models, JARVIS-GPT t
 - Accessing the current date and time
 - Accessing the current weather conditions at any location
 - Accessing the daily weather forecast up to 8 days in the future at any location
-- Reading, writing, and deleting notes organized by date and time 
+- Reading, writing, and deleting notes organized by date and time
+- Turning smart lights on/off and changing brightness
 
 And perhaps it is just a glorified DIY Alexa... but at least, in my opinion, it looks and sounds cool in the process :D
 
 
 ## Hardware
 
-The main hardware consists of a Raspberry Pi 4B with a [Respeaker 4-mic Array Hat](https://wiki.seeedstudio.com/ReSpeaker_4_Mic_Array_for_Raspberry_Pi/) for audio detection. These components are stored in a 3D-printed enclosure mounted on the ceiling, with openings for the LEDs. The GPIO port on the hat is connected to an external push button for activation. The audio is output through the 3.5mm jack to an amplifier that is connected to two wall-mounted speakers.
+The main hardware consists of a Raspberry Pi 4B with a [Respeaker 4-mic Array Hat](https://wiki.seeedstudio.com/ReSpeaker_4_Mic_Array_for_Raspberry_Pi/) for audio detection. These components are housed in a 3D-printed enclosure, with openings for the microphones and LEDs. The design of the enclosure was inspired by the Arc Reactor and the red/silver PLA was chosen to match the colorway of the MK5 suit. The audio is output through the 3.5mm jack to an amplifier that is connected to two wall-mounted speakers.
+
+<div align='center'>
+<img src='media/closeup-reactor.png' height='250'> <img src='media/printed-reactor.JPG' height='250'> 
+</div>
 
 
 ## Software
@@ -32,22 +37,29 @@ Main Packages:
 - [OpenAI](https://platform.openai.com/docs/introduction)
 - [ElevenLabs](https://github.com/elevenlabs/elevenlabs-python)
 - [PyOWM](https://pyowm.readthedocs.io/en/latest/) for [OpenWeatherMap](https://openweathermap.org/api)
+- [PHue](https://github.com/studioimaginaire/phue) for Philips Hue smart lights
 
-Each time JARVIS is activated, [featurized_stream.py](https://github.com/henrynoyes/jarvis-gpt/tree/master/featurized_stream.py) listens for speech, translates the speech to text, queries GPT with the text, performs any necessary function calling, and finally converts the text response to speech in a custom JARVIS voice. The framework was designed to be as simple as possible in the hopes that others can easily interpret the code and make their own modifications if desired.
+Each time JARVIS is activated, [main.py](https://github.com/henrynoyes/jarvis-gpt/tree/master/main.py) listens for speech, translates the speech to text, queries GPT with the text, performs any necessary function calling, and finally converts the text response to speech in a custom JARVIS voice. The framework was designed to be as simple as possible in the hopes that others can easily interpret the code and make their own modifications if desired.
+
+There are two options for activation. `boot_wakeword` uses Picovoice's [porcupine](https://github.com/Picovoice/porcupine) to perform on-device wakeword detection and activates JARVIS every time his name is mentioned. `boot_button` * **IN DEVELOPMENT** * takes advantage of RF transmission to activate JARVIS at the press of a wireless button, much like a TV remote.
 
 To ensure privacy, all personal information such as API keys are stored locally in environment variables and accessed using [os](https://docs.python.org/3/library/os.html). See [OpenAI's API Key Guide](https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety) for instructions on how to set environment variables on Linux/Windows/MacOS. Here is a list of all custom environment variables:
 
 - OPENAI_API_KEY - Used for all queries to GPT models. Find it [here](https://help.openai.com/en/articles/4936850-where-do-i-find-my-api-key)
 - ELEVEN_API_KEY - Used for all TTS. Find it [here](https://elevenlabs.io/docs/api-reference/text-to-speech#authentication)
 - OWM_API_KEY - Used for the `get_current_weather` and `get_future_weather` functions. Find it [here](https://openweathermap.org/appid#signup)
+- PICOVOICE_API_KEY - Used for wakeword activation. Find it [here](https://picovoice.ai/docs/quick-start/picovoice-python/#picovoice-account--accesskey)
 - JARVIS_LOCATION - Used as the default location for the `get_current_weather` and `get_future_weather` functions. In the form `'city,state,US'` for US cities and `'city,country'` for elsewhere. Ex: `'Phoenix,AZ,US'` or `'London,GB'`
 - JARVIS_VOICEID - Used for all TTS. Find the list of voices [here](https://github.com/elevenlabs/elevenlabs-python/blob/main/API.md#voices-1).
+- PHUE_IP – Used for the `power_lights` and `change_brightness` functions. Found in the [Philips Hue app](https://www.philips-hue.com/en-us/explore-hue/apps/bridge)
+
+`config.yaml` can be edited to configure default settings for startup and shutdown
 
 
 ## Future Developments
 
-- Add option for always on + wake word (activate with "Hey JARVIS ...")
-- Connect to light display and have JARVIS turn on/turn off/change colors
 - Allow multiple exchanges with historical context, more like ChatGPT (ex: "Read me my notes from yesterday" $\rightarrow$ "Delete the second one")
 - Replace startup mp3 with custom message detailing date, time, and weather
 - Replace local notetaking functionality with a cloud-based application that can be accessed from other devices (mobile/PC)
+- Create template branch with custom applications removed and only basic functionality
+- Integrate text-to-3D-models using [Shape-E](https://github.com/openai/shap-e) ("Hey JARVIS, make me a 3D model of ...") $\vert$ Long term: text-to-CAD? ("Hey JARVIS, create a CAD model of a box with dimensions ... Add a cylinder on top with dimensions ... and position it ...")
