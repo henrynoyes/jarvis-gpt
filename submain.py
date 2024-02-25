@@ -4,6 +4,7 @@ from openai import OpenAI
 from elevenlabs import generate, stream, Voice
 from pyowm.owm import OWM
 from datetime import datetime
+import subprocess
 
 class MorningJarvis():
 
@@ -82,3 +83,25 @@ class MorningJarvis():
 
         response = self.request(text)
         self.play(response)
+
+class Notifetcher():
+
+    def fetch(self):
+
+        out_str = subprocess.run(['osascript', '/Users/henry/jarvis-gpt/notif.scpt'], capture_output=True, text=True, check=True)
+        out_lst = out_str.stdout.replace('\n', '').split(', ')
+        
+        notif_lst = [{'Total Notifications': len(out_lst)}]
+
+        for notif_str in out_lst:
+            data = notif_str.split('|')
+
+            dct = {
+                'Time': data[0],
+                'Title': data[1],
+                'Description': data[2]
+            }
+
+            notif_lst.append(dct)
+
+        return notif_lst
