@@ -3,7 +3,7 @@ from pvrecorder import PvRecorder
 import os
 from main import Jarvis, Shutdown
 from pygame import mixer
-import time
+from time import sleep
 
 jv = Jarvis()
 
@@ -30,7 +30,7 @@ except Shutdown:
     recorder.stop()
     mixer.music.load('./media/shutting_down.mp3')
     mixer.music.play()
-    time.sleep(2)
+    sleep(2)
 
 except KeyboardInterrupt:
     recorder.stop()
