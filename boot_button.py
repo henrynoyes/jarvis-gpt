@@ -5,9 +5,9 @@ from time import sleep
 
 jv = Jarvis()
 
-pin = 12
+pin = 13
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(pin, GPIO.IN)
+GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 mixer.init()
 mixer.music.load('./media/welcome_back.mp3')
@@ -21,14 +21,19 @@ try:
 
     while True:
         state = GPIO.input(pin)
-
+        
+        sleep(0.05)
         if state:
             jv.run()
+            
 
 except Shutdown:
     mixer.music.load('./media/shutting_down.mp3')
     mixer.music.play()
     sleep(2)
+
+except KeyboardInterrupt:
+    pass
 
 finally:
     GPIO.cleanup()
