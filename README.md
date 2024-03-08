@@ -20,6 +20,7 @@ In addition to the conversational abilities of OpenAI's GPT models, JARVIS-GPT t
 
 And perhaps it is just a glorified DIY Alexa... but at least, in my opinion, it looks and sounds cool in the process :D
 
+### *DEMO VIDEO COMING SOON\*
 
 ## Hardware
 
@@ -41,7 +42,7 @@ Main Packages:
 
 Each time JARVIS is activated, [main.py](https://github.com/henrynoyes/jarvis-gpt/tree/master/main.py) listens for speech, translates the speech to text, queries GPT with the text, performs any necessary function calling, and finally converts the text response to speech in a custom JARVIS voice. The framework was designed to be as simple as possible in the hopes that others can easily interpret the code and make their own modifications if desired.
 
-There are two options for activation. `boot_wakeword` uses Picovoice's [porcupine](https://github.com/Picovoice/porcupine) to perform on-device wakeword detection and activates JARVIS every time his name is mentioned. `boot_button` * **IN DEVELOPMENT** * takes advantage of RF transmission to activate JARVIS at the press of a wireless button, much like a TV remote.
+There are two options for activation. `boot_wakeword` uses Picovoice's [porcupine](https://github.com/Picovoice/porcupine) to perform on-device wakeword detection and activates JARVIS every time his name is mentioned. `boot_button` takes advantage of RF transmission to activate JARVIS at the press of a wireless button, much like a TV remote.
 
 To ensure privacy, all personal information such as API keys are stored locally in environment variables and accessed using [os](https://docs.python.org/3/library/os.html). See [OpenAI's API Key Guide](https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety) for instructions on how to set environment variables on Linux/Windows/MacOS. Here is a list of all custom environment variables:
 
