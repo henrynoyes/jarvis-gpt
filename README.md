@@ -59,6 +59,9 @@ To ensure privacy, all personal information such as API keys are stored locally 
 
 Listen below for some example speech from the custom JARVIS voice model:
 
+https://github.com/henrynoyes/jarvis-gpt/assets/107648313/77035885-382b-46c0-b3b9-a7d1ed7723c0
+
+
 ## Morning Message (MacOS)
 
 I developed a secondary functionality for JARVIS on MacOS. With the push of a button, JARVIS will parse your notification center, pull daily weather data, and give you a motivating and informative morning message to get the day started. To configure this, I mapped a keyboard shortcut to an [automator workflow](https://support.apple.com/guide/automator/use-a-shell-script-action-in-a-workflow-autbbd4cc11c/mac) that runs [good_morning.py](https://github.com/henrynoyes/jarvis-gpt/tree/macos-dev/good_morning.py) (in the appropriate environment). Within the python script is a modified version of the main JARVIS class from the original implementation, which calls to OpenWeatherMap for a daily forecast and fetches notification data using an [AppleScript](https://github.com/henrynoyes/jarvis-gpt/tree/macos-dev/notif.scpt). See an example of this in action in the video below.
