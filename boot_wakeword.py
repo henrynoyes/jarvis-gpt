@@ -15,9 +15,7 @@ mixer.music.load('./media/welcome_back.mp3')
 
 try:
     mixer.music.play()
-    
-    jv.startup()
-    
+        
     recorder.start()
     print('JARVIS activated')
     while True:
