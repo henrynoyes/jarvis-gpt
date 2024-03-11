@@ -22,6 +22,7 @@ And perhaps it is just a glorified DIY Alexa... but at least, in my opinion, it 
 
 ### *DEMO VIDEO COMING SOON\*
 
+
 ## Hardware
 
 The main hardware consists of a Raspberry Pi 4B with a [Respeaker 4-mic Array Hat](https://wiki.seeedstudio.com/ReSpeaker_4_Mic_Array_for_Raspberry_Pi/) for audio detection. These components are housed in a 3D-printed enclosure, with openings for the microphones and LEDs. The design of the enclosure was inspired by the Arc Reactor and the red/silver PLA was chosen to match the colorway of the MK5 suit. The audio is output through the 3.5mm jack to an amplifier that is connected to two wall-mounted speakers.
@@ -40,7 +41,7 @@ Main Packages:
 - [PyOWM](https://pyowm.readthedocs.io/en/latest/) for [OpenWeatherMap](https://openweathermap.org/api)
 - [PHue](https://github.com/studioimaginaire/phue) for Philips Hue smart lights
 
-Each time JARVIS is activated, [main.py](https://github.com/henrynoyes/jarvis-gpt/tree/master/main.py) listens for speech, translates the speech to text, queries GPT with the text, performs any necessary function calling, and finally converts the text response to speech in a custom JARVIS voice. The framework was designed to be as simple as possible in the hopes that others can easily interpret the code and make their own modifications if desired.
+Each time JARVIS is activated, [main.py](https://github.com/henrynoyes/jarvis-gpt/tree/master/main.py) listens for speech, translates the speech to text, queries GPT with the text, performs any necessary function calling, and finally converts the text response to speech in a custom JARVIS voice. The framework was designed to be as simple as possible in the hopes that others can easily interpret the code and make their own modifications if desired. See the [template](https://github.com/henrynoyes/jarvis-gpt/tree/template) branch for a bare-bones implementation that is stripped of many of the custom applications.
 
 There are two options for activation. `boot_wakeword` uses Picovoice's [porcupine](https://github.com/Picovoice/porcupine) to perform on-device wakeword detection and activates JARVIS every time his name is mentioned. `boot_button` takes advantage of RF transmission to activate JARVIS at the press of a wireless button, much like a TV remote.
 
@@ -56,6 +57,7 @@ To ensure privacy, all personal information such as API keys are stored locally 
 
 `config.yaml` can be edited to configure default settings for startup and shutdown
 
+Listen below for some example speech from the custom JARVIS voice model:
 
 ## Morning Message (MacOS)
 
@@ -69,5 +71,4 @@ https://github.com/henrynoyes/jarvis-gpt/assets/107648313/ffaeb136-671c-473f-ab0
 - Allow multiple exchanges with historical context, more like ChatGPT (ex: "Read me my notes from yesterday" $\rightarrow$ "Delete the second one")
 - Replace startup mp3 with custom message detailing date, time, and weather
 - Replace local notetaking functionality with a cloud-based application that can be accessed from other devices (mobile/PC)
-- Create template branch with custom applications removed and only basic functionality
 - Integrate text-to-3D-models using [Shape-E](https://github.com/openai/shap-e) ("Hey JARVIS, make me a 3D model of ...") $\vert$ Long term: text-to-CAD? ("Hey JARVIS, create a CAD model of a box with dimensions ... Add a cylinder on top with dimensions ... and position it ...")
