@@ -52,7 +52,7 @@ To ensure privacy, all personal information such as API keys are stored locally 
 - OWM_API_KEY - Used for the `get_current_weather` and `get_future_weather` functions. Find it [here](https://openweathermap.org/appid#signup)
 - PICOVOICE_API_KEY - Used for wakeword activation. Find it [here](https://picovoice.ai/docs/quick-start/picovoice-python/#picovoice-account--accesskey)
 - JARVIS_LOCATION - Used as the default location for the `get_current_weather` and `get_future_weather` functions. In the form `'city,state,US'` for US cities and `'city,country'` for elsewhere. Ex: `'Phoenix,AZ,US'` or `'London,GB'`
-- JARVIS_VOICEID - Used for all TTS. Find the list of voices [here](https://github.com/elevenlabs/elevenlabs-python/blob/main/API.md#voices-1).
+- JARVIS_VOICEID - Used for all TTS. Find the list of voices [here](https://github.com/elevenlabs/elevenlabs-python?tab=readme-ov-file#%EF%B8%8F-voices).
 - PHUE_IP – Used for the `power_lights` and `change_brightness` functions. Found in the [Philips Hue app](https://www.philips-hue.com/en-us/explore-hue/apps/bridge)
 
 `config.yaml` can be edited to configure default settings for startup and shutdown
