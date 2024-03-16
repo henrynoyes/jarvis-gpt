@@ -94,7 +94,7 @@ class Notifetcher():
         notif_lst = [{'Total Notifications': len(out_lst)}]
 
         for notif_str in out_lst:
-            data = notif_str.split('|')
+            data = notif_str.split('||')
 
             dct = {
                 'Time': data[0],
