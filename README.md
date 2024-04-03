@@ -71,7 +71,7 @@ https://github.com/henrynoyes/jarvis-gpt/assets/107648313/ffaeb136-671c-473f-ab0
 
 ## Future Developments
 
-- Integrate with [OpenInterpreter](https://github.com/OpenInterpreter/open-interpreter). May require large rework, but their progress looks promising. Could be a massive step towards more advanced features like text-to-CAD, but want to keep TTS the same and have freedom in function calling.
+- Inherit websocket + gui control structure from [OpenInterpreter](https://github.com/OpenInterpreter/01) to enable function calling on external PC
 - Allow multiple exchanges with historical context, more like ChatGPT (ex: "Read me my notes from yesterday" $\rightarrow$ "Delete the second one")
 - Replace startup mp3 with custom message detailing date, time, and weather
 - Replace local notetaking functionality with a cloud-based application that can be accessed from other devices (mobile/PC)
