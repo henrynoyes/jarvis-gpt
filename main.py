@@ -2,8 +2,8 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import speech_recognition as sr
 from openai import OpenAI
-from elevenlabs import generate, stream
-from elevenlabs.api import Voice
+from elevenlabs import Voice, stream
+from elevenlabs.client import ElevenLabs
 import time
 from gpiozero import LED
 from apa102 import APA102
@@ -20,7 +20,8 @@ class Shutdown(Exception):
 class Jarvis():
 
     def __init__(self):
-        self.client = OpenAI()
+        self.oai_client = OpenAI()
+        self.elev_client = ElevenLabs()
         self.notes_path = './notes.json'
         self.led_driver = APA102(num_led=12)
         self.led_power = LED(5)
@@ -379,7 +380,7 @@ class Jarvis():
                     You can turn the lights on/off using power_lights. You can change the light brightness using change_brightness. ALWAYS BE CONCISE.'},
                     {'role': 'user', 'content': text}]
 
-        response = self.client.chat.completions.create(
+        response = self.oai_client.chat.completions.create(
             model='gpt-3.5-turbo',
             messages=msgs,
             functions=self.gpt_funcs,
@@ -404,7 +405,7 @@ class Jarvis():
                 )
 
                 print('Function Responding...')
-                response = self.client.chat.completions.create(
+                response = self.oai_client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=msgs,)
                 
@@ -421,9 +422,9 @@ class Jarvis():
         
         print('Generating audio...')
 
-        jv_voice = Voice.from_id(os.getenv('JARVIS_VOICEID'))
+        jv_voice = Voice(voice_id=os.getenv('JARVIS_VOICEID'))
 
-        audio = generate(
+        audio = self.elev_client.generate(
             text=response,
             voice=jv_voice,
             model='eleven_multilingual_v2',
