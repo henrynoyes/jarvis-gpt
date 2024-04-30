@@ -2,8 +2,8 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import speech_recognition as sr
 from openai import OpenAI
-from elevenlabs import generate, stream
-from elevenlabs.api import Voice
+from elevenlabs import Voice, stream
+from elevenlabs.client import ElevenLabs
 import sounddevice
 from datetime import datetime
 import json
@@ -14,7 +14,8 @@ class Shutdown(Exception):
 class Jarvis():
 
     def __init__(self):
-        self.client = OpenAI()
+        self.oai_client = OpenAI()
+        self.elev_client = ElevenLabs()
         self.func_dct = {
             'shutdown': self.shutdown,
             'get_current_datetime': self.get_current_datetime,
@@ -74,7 +75,7 @@ class Jarvis():
                  You can access the current date and time using get_current_datetime. ALWAYS BE CONCISE.'},
                     {'role': 'user', 'content': text}]
 
-        response = self.client.chat.completions.create(
+        response = self.oai_client.chat.completions.create(
             model='gpt-3.5-turbo',
             messages=msgs,
             functions=self.gpt_funcs,
@@ -99,7 +100,7 @@ class Jarvis():
                 )
 
                 print('Function Responding...')
-                response = self.client.chat.completions.create(
+                response = self.oai_client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=msgs,)
                 
@@ -112,9 +113,9 @@ class Jarvis():
         
         print('Generating audio...')
 
-        jv_voice = Voice.from_id(os.getenv('JARVIS_VOICEID'))
+        jv_voice = Voice(voice_id=os.getenv('JARVIS_VOICEID'))
 
-        audio = generate(
+        audio = self.elev_client.generate(
             text=response,
             voice=jv_voice,
             model='eleven_multilingual_v2',
