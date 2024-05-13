@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import os
+import json
 
 class WSClient:
     def __init__(self):
@@ -25,13 +26,21 @@ class WSServer:
         }
 
     def recolor_model(self, current_color, new_color):
-        pass
+        # clicks
+        return 'recolor complete'
 
     async def handler(self, websocket):
         async for msg in websocket:
             print(f'{msg=}')
+            jmsg = json.loads(msg)
+            func_name = jmsg['name']
 
-            await websocket.send(f'response to {msg}')
+            if func_name in self.func_dct:
+                func_to_call = self.func_dct[func_name]
+                func_args = json.loads(jmsg['arguments'])
+                func_resp = func_to_call(**func_args)
+
+            await websocket.send(func_resp)
 
     async def _run(self):
         async with websockets.serve(self.handler, self.host, self.port):

@@ -361,8 +361,11 @@ class Jarvis:
         return None
 
     def recolor_model(self, current_color, new_color):
-        msg = f'recolor_model.{current_color}.{new_color}'
-        self.ws_client.run(msg)
+        args = {'current_color': current_color,
+                'new_color': new_color}
+        msg = {'name': 'recolor_model',
+               'arguments': args}
+        self.ws_client.run(json.dumps(msg))
         return self.ws_client.resp_dct
     
     def listen(self):
@@ -413,7 +416,6 @@ class Jarvis:
             function_call='auto')
         
         resp_msg = response.choices[0].message
-        print('re', resp_msg, type(resp_msg))
 
         if resp_msg.function_call:
             func_name = resp_msg.function_call.name
