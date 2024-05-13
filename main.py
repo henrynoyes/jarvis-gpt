@@ -13,15 +13,17 @@ import json
 import yaml
 from pyowm.owm import OWM
 from phue import Bridge
+from ws import WSClient
 
 class Shutdown(Exception):
     pass
 
-class Jarvis():
+class Jarvis:
 
     def __init__(self):
         self.oai_client = OpenAI()
         self.elev_client = ElevenLabs()
+        self.ws_client = WSClient()
         self.notes_path = './notes.json'
         self.led_driver = APA102(num_led=12)
         self.led_power = LED(5)
@@ -36,7 +38,8 @@ class Jarvis():
             'read_note': self.read_note,
             'remove_note': self.remove_note,
             'power_lights': self.power_lights,
-            'change_brightness': self.change_brightness
+            'change_brightness': self.change_brightness,
+            'recolor_model': self.recolor_model
         }
         self.gpt_funcs = [
             {
@@ -163,6 +166,24 @@ class Jarvis():
                         }
                     },
                     'required': ['desired_light', 'desired_percent'],
+                },
+            },
+            {
+                'name': 'recolor_model',
+                'description': 'Recolor a 3D model',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'current_color': {
+                            'type': 'string',
+                            'description': 'The current color to modify on the 3D model',
+                        },
+                        'new_color': {
+                            'type': 'string',
+                            'description': 'The new color to use on the 3D model',
+                        }
+                    },
+                    'required': ['current_color', 'new_color'],
                 },
             },
                 ]
@@ -338,6 +359,10 @@ class Jarvis():
             light_dct[name].brightness = desired_bri
 
         return None
+
+    def recolor_model(self, current_color, new_color):
+        msg = f'recolor_model.{current_color}.{new_color}'
+        self.ws_client.run(msg)
     
     def listen(self):
         
