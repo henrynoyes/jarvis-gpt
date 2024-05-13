@@ -2,6 +2,11 @@ import asyncio
 import websockets
 import os
 import json
+import pyautogui
+from io import BytesIO
+import base64
+import requests
+from time import sleep
 
 class WSClient:
     def __init__(self):
@@ -22,11 +27,44 @@ class WSServer:
         self.host = host
         self.port = port
         self.func_dct = {
-            'recolor_model', self.recolor_model
+            'recolor_model': self.recolor_model
         }
 
+    def locate(self, query):
+        ss = pyautogui.screenshot(region=(0, 0, 2560, 1030))
+        buff = BytesIO()
+        ss.save(buff, format='PNG')
+        ss_b64 = base64.b64encode(buff.getvalue()).decode()
+
+        response = requests.post(
+            f'https://api.openinterpreter.com/v0/point/',
+            json={'query': query, 'base64': ss_b64}
+        )
+        js = response.json()[0]
+        coords = (int(js[0] * 2560),
+            int(js[1] * 1030))
+        
+        return coords
+
     def recolor_model(self, current_color, new_color):
-        # clicks
+        # open appearance tab
+        x, y = self.locate('sphere multicolor')
+        pyautogui.moveTo(x, y)
+        pyautogui.click()
+        sleep(0.5)
+
+        # open current color
+        x, y = self.locate(f'{current_color} sphere')
+        pyautogui.moveTo(x, y)
+        pyautogui.doubleClick()
+        sleep(0.5)
+
+        # change to new color
+        x, y = self.locate(f'{new_color} square')
+        pyautogui.moveTo(x, y)
+        pyautogui.click()
+        pyautogui.press('enter')
+
         return 'recolor complete'
 
     async def handler(self, websocket):
@@ -37,7 +75,7 @@ class WSServer:
 
             if func_name in self.func_dct:
                 func_to_call = self.func_dct[func_name]
-                func_args = json.loads(jmsg['arguments'])
+                func_args = jmsg['arguments']
                 func_resp = func_to_call(**func_args)
 
             await websocket.send(func_resp)
