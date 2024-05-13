@@ -5,12 +5,13 @@ import os
 class WSClient:
     def __init__(self):
         self.svr_ip = os.getenv('WS_IP')
+        self.resp_dct = {'status': None}
 
     async def _run(self, msg):
         async with websockets.connect(f'ws://{self.svr_ip}:8800') as websocket:
             await websocket.send(msg)
             response = await websocket.recv()
-            print(f'received {response}')
+            self.resp_dct['status'] = response
 
     def run(self, msg):
         return asyncio.run(self._run(msg))
@@ -19,6 +20,12 @@ class WSServer:
     def __init__(self, host, port):
         self.host = host
         self.port = port
+        self.func_dct = {
+            'recolor_model', self.recolor_model
+        }
+
+    def recolor_model(self, current_color, new_color):
+        pass
 
     async def handler(self, websocket):
         async for msg in websocket:
@@ -30,7 +37,8 @@ class WSServer:
         async with websockets.serve(self.handler, self.host, self.port):
             await asyncio.Future()
 
-    async def run(self):
+    def run(self):
+        print(f'JARVIS WSServer started on {self.host}:{self.port}')
         return asyncio.run(self._run())
 
 
