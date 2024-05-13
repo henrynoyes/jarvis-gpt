@@ -57,15 +57,16 @@ class WSServer:
         x, y = self.locate(f'{current_color} sphere')
         pyautogui.moveTo(x, y)
         pyautogui.doubleClick()
-        sleep(0.5)
+        sleep(1.5)
 
         # change to new color
         x, y = self.locate(f'{new_color} square')
         pyautogui.moveTo(x, y)
         pyautogui.click()
+        sleep(0.5)
         pyautogui.press('enter')
 
-        return 'recolor complete'
+        return f'recolor from {current_color} to {new_color} is complete'
 
     async def handler(self, websocket):
         async for msg in websocket:
