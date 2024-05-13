@@ -92,37 +92,3 @@ class WSServer:
 if __name__ == '__main__':
     server = WSServer('0.0.0.0', 8800)
     server.run()
-
-
-
-
-
-
-
-
-
-
-
-def recolor_model(clr):
-    print('coloring')
-    return 'done'
-
-func_dct = {'recolor_model': recolor_model}
-
-async def handler(websocket):
-    async for msg in websocket:
-        print(f'{msg=}')
-        func_resp = 'no'
-
-        if msg in func_dct.keys():
-            func = func_dct[msg]
-            func_resp = func('blue')
-
-        await websocket.send(f'{func_resp}')
-
-async def main():
-    server = await websockets.serve(handler, '0.0.0.0', 8800)
-    await asyncio.Future()
-
-if __name__ == '__main__':
-    asyncio.run(main())
