@@ -20,7 +20,7 @@ GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 buf = Buffer(maxlen=10)
 
 mixer.init()
-mixer.music.load('./media/welcome_back.mp3')
+mixer.music.load('/home/jarvis/jarvis-gpt/media/welcome_back.mp3')
 
 try:
     mixer.music.play()
@@ -40,7 +40,7 @@ try:
             
 
 except Shutdown:
-    mixer.music.load('./media/shutting_down.mp3')
+    mixer.music.load('/home/jarvis/jarvis-gpt/media/shutting_down.mp3')
     mixer.music.play()
     sleep(2)
 

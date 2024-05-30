@@ -24,7 +24,7 @@ class Jarvis:
         self.oai_client = OpenAI()
         self.elev_client = ElevenLabs()
         self.ws_client = WSClient()
-        self.notes_path = './notes.json'
+        self.notes_path = '/home/jarvis/jarvis-gpt/notes.json'
         self.led_driver = APA102(num_led=12)
         self.led_power = LED(5)
         self.bridge = Bridge(os.getenv('PHUE_IP'))
@@ -190,7 +190,7 @@ class Jarvis:
     
     def startup(self):
 
-        with open('./config.yaml', 'r') as f:
+        with open('/home/jarvis/jarvis-gpt/config.yaml', 'r') as f:
             cfg_dct = yaml.safe_load(f)
 
             if cfg_dct['startup_lights']:
@@ -206,7 +206,7 @@ class Jarvis:
 
     def shutdown(self):
         
-        with open('./config.yaml', 'r') as f:
+        with open('/home/jarvis/jarvis-gpt/config.yaml', 'r') as f:
             cfg_dct = yaml.safe_load(f)
 
             if cfg_dct['shutdown_lights']:
@@ -321,7 +321,8 @@ class Jarvis:
 
         name_lst = [desired_light]
         if desired_light =='all':
-            name_lst = light_dct.keys()
+            name_lst = list(light_dct.keys())
+            name_lst.remove('JARVIS Plug')
 
         for name in name_lst:
             current_state = light_dct[name].on
@@ -345,7 +346,8 @@ class Jarvis:
 
         name_lst = [desired_light]
         if desired_light =='all':
-            name_lst = light_dct.keys()
+            name_lst = list(light_dct.keys())
+            name_lst.remove('JARVIS Plug')
 
         for name in name_lst:
             power_status = light_dct[name].on
