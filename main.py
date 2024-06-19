@@ -4,7 +4,7 @@ import speech_recognition as sr
 from openai import OpenAI
 from elevenlabs import Voice, stream
 from elevenlabs.client import ElevenLabs
-import time
+from time import sleep
 from gpiozero import LED
 from apa102 import APA102
 import sounddevice
@@ -14,6 +14,7 @@ import yaml
 from pyowm.owm import OWM
 from phue import Bridge
 from ws import WSClient
+import pyautogui as pyg
 
 class Shutdown(Exception):
     pass
@@ -39,7 +40,8 @@ class Jarvis:
             'remove_note': self.remove_note,
             'power_lights': self.power_lights,
             'change_brightness': self.change_brightness,
-            'recolor_model': self.recolor_model
+            'recolor_model': self.recolor_model,
+            'start_timer': self.start_timer
         }
         self.gpt_funcs = [
             {
@@ -186,6 +188,20 @@ class Jarvis:
                     'required': ['current_color', 'new_color'],
                 },
             },
+            {
+                'name': 'start_timer',
+                'description': 'Start a timer',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'desired_length': {
+                            'type': 'string',
+                            'description': 'The desired length of the timer in integer minutes',
+                        }
+                    },
+                    'required': ['desired_length'],
+                },
+            },
                 ]
     
     def startup(self):
@@ -201,7 +217,7 @@ class Jarvis:
         for i in range(12):
             self.led_driver.set_pixel(i, 0, 255, 255)
             self.led_driver.show()
-            time.sleep(0.66)
+            sleep(0.66)
         self.led_driver.clear_strip()
 
     def shutdown(self):
@@ -369,6 +385,27 @@ class Jarvis:
                'arguments': args}
         self.ws_client.run(json.dumps(msg))
         return self.ws_client.resp_dct
+    
+    def dash(self, x, y):
+        pyg.moveTo(x, y)
+        pyg.click()
+        sleep(1)
+
+    def start_timer(self, desired_length):
+        
+        self.dash(337, 50)
+        
+        self.dash(560, 209)
+
+        pyg.press('backspace')
+        sleep(1)
+
+        pyg.write(desired_length)
+        sleep(1)
+
+        self.dash(800, 500)
+        
+        return {'status': 'timer started', 'length': desired_length}
     
     def listen(self):
         
