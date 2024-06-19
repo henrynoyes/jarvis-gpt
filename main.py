@@ -43,7 +43,8 @@ class Jarvis:
             'power_lights': self.power_lights,
             'change_brightness': self.change_brightness,
             'recolor_model': self.recolor_model,
-            'start_timer': self.start_timer
+            'start_timer': self.start_timer,
+            'switch_dashboard': self.switch_dashboard
         }
         self.gpt_funcs = [
             {
