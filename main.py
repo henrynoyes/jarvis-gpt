@@ -30,6 +30,8 @@ class Jarvis:
         self.led_power = LED(5)
         self.bridge = Bridge(os.getenv('PHUE_IP'))
         self.owm = OWM(os.getenv('OWM_API_KEY'))
+        self.logo_dct = {'home': (1100, 76),
+                         'timer': (337, 50)}
         self.func_dct = {
             'shutdown': self.shutdown,
             'get_current_datetime': self.get_current_datetime,
@@ -200,6 +202,21 @@ class Jarvis:
                         }
                     },
                     'required': ['desired_length'],
+                },
+            },
+            {
+                'name': 'switch_dashboard',
+                'description': 'Switch to a specified dashboard',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'desired_dashboard': {
+                            'type': 'string',
+                            'enum': ['home', 'timer'],
+                            'description': 'The desired dashboard to switch to. Choose "home" if no dashboard name is specified.',
+                        }
+                    },
+                    'required': ['desired_dashboard'],
                 },
             },
                 ]
@@ -391,15 +408,20 @@ class Jarvis:
         pyg.click()
         sleep(1)
 
+    def switch_dashboard(self, desired_dashboard):
+
+        x, y = self.logo_dct[desired_dashboard]
+        self.dash(x, y)
+        return None
+    
     def start_timer(self, desired_length):
         
-        self.dash(337, 50)
-        
+        tx, ty = self.logo_dct['timer']
+        self.dash(tx, ty)
         self.dash(560, 209)
 
         pyg.press('backspace')
         sleep(1)
-
         pyg.write(desired_length)
         sleep(1)
 
@@ -445,7 +467,8 @@ class Jarvis:
         msgs = [{'role': 'system', 'content': 'You are a helpful assistant named Jarvis. Address the user with Sir. You can access the current date and time using get_current_datetime. \
                     You can access current weather information using get_current_weather. You can access weather forecasts up to 8 days in the future using get_future_weather. Do not ask the user for a location. \
                     Always report weather information in imperial units. You can read notes using read_note. You can record notes using record_note. You can remove notes using remove_note. \
-                    You can turn the lights on/off using power_lights. You can change the light brightness using change_brightness. ALWAYS BE CONCISE.'},
+                    You can turn the lights on/off using power_lights. You can change the light brightness using change_brightness. You can color 3D models using recolor_model. \
+                    You can switch dashboards using switch_dashboard. You can start a timer using start_timer. ALWAYS BE CONCISE.'},
                     {'role': 'user', 'content': text}]
 
         response = self.oai_client.chat.completions.create(
