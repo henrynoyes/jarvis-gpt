@@ -26,12 +26,14 @@ class Jarvis:
         self.elev_client = ElevenLabs()
         self.ws_client = WSClient()
         self.notes_path = '/home/jarvis/jarvis-gpt/notes.json'
+        self.prompt_path = '/home/jarvis/jarvis-gpt/prompt.txt'
         self.led_driver = APA102(num_led=12)
         self.led_power = LED(5)
         self.bridge = Bridge(os.getenv('PHUE_IP'))
         self.owm = OWM(os.getenv('OWM_API_KEY'))
         self.logo_dct = {'home': (1100, 76),
                          'timer': (337, 50)}
+        self.history = self.init_history()
         self.func_dct = {
             'shutdown': self.shutdown,
             'get_current_datetime': self.get_current_datetime,
@@ -221,6 +223,15 @@ class Jarvis:
                 },
             },
                 ]
+        
+    def init_history(self):
+        with open(self.prompt_path, 'r') as p:
+            prompt = p.read()
+        return [{'role': 'system', 'content': prompt}]
+    
+    def trim_history(self):
+        if len(self.history) > 20:
+            self.history = self.history[:1]
     
     def startup(self):
 
@@ -464,21 +475,20 @@ class Jarvis:
     def request(self, text):
 
         print('Responding...')
-
-        msgs = [{'role': 'system', 'content': 'You are a helpful assistant named Jarvis. Address the user with Sir. You can access the current date and time using get_current_datetime. \
-                    You can access current weather information using get_current_weather. You can access weather forecasts up to 8 days in the future using get_future_weather. Do not ask the user for a location. \
-                    Always report weather information in imperial units. You can read notes using read_note. You can record notes using record_note. You can remove notes using remove_note. \
-                    You can turn the lights on/off using power_lights. You can change the light brightness using change_brightness. You can color 3D models using recolor_model. \
-                    You can switch dashboards using switch_dashboard. You can start a timer using start_timer. ALWAYS BE CONCISE.'},
-                    {'role': 'user', 'content': text}]
+        
+        self.trim_history()
+        self.history.append({'role': 'user', 'content': text})
 
         response = self.oai_client.chat.completions.create(
             model='gpt-3.5-turbo',
-            messages=msgs,
+            messages=self.history,
             functions=self.gpt_funcs,
             function_call='auto')
         
         resp_msg = response.choices[0].message
+
+        if resp_msg.content:
+            self.history.append({'role': 'assistant', 'content': resp_msg.content})
 
         if resp_msg.function_call:
             func_name = resp_msg.function_call.name
@@ -488,7 +498,7 @@ class Jarvis:
             print(f'Calling {func_name}...')
             func_response = func_to_call(**func_args)
             if func_response:
-                msgs.append(
+                self.history.append(
                     {
                         "role": "function",
                         "name": func_name,
@@ -499,9 +509,12 @@ class Jarvis:
                 print('Function Responding...')
                 response = self.oai_client.chat.completions.create(
                     model="gpt-3.5-turbo",
-                    messages=msgs,)
+                    messages=self.history)
                 
                 resp_msg = response.choices[0].message
+
+                if resp_msg.content:
+                    self.history.append({'role': 'assistant', 'content': resp_msg.content})
             
         print(resp_msg.content)
         return resp_msg.content
