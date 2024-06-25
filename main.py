@@ -231,7 +231,7 @@ class Jarvis:
     
     def trim_history(self):
         if len(self.history) > 20:
-            self.history = self.history[:1]
+            self.history = self.history[:1] + self.history[-15:]
     
     def startup(self):
 
