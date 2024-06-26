@@ -31,7 +31,7 @@ class Jarvis:
         self.led_power = LED(5)
         self.bridge = Bridge(os.getenv('PHUE_IP'))
         self.owm = OWM(os.getenv('OWM_API_KEY'))
-        self.logo_dct = {'home': (1100, 76),
+        self.logo_dct = {'home': (1330, 76),
                          'timer': (337, 50)}
         self.history = self.init_history()
         self.func_dct = {
@@ -430,14 +430,14 @@ class Jarvis:
         
         tx, ty = self.logo_dct['timer']
         self.dash(tx, ty)
-        self.dash(560, 209)
+        self.dash(662, 209)
 
         pyg.press('backspace')
         sleep(1)
         pyg.write(desired_length)
         sleep(1)
 
-        self.dash(800, 500)
+        self.dash(910, 600)
         
         return {'status': 'timer started', 'length': desired_length}
     
