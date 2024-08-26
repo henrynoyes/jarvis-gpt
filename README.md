@@ -20,7 +20,10 @@ In addition to the conversational abilities of OpenAI's GPT models, JARVIS-GPT t
 
 And perhaps it is just a glorified DIY Alexa... but at least, in my opinion, it looks and sounds cool in the process :D
 
-### *DEMO VIDEO COMING SOON\*
+
+## Demo Video
+
+[![demo video](https://img.youtube.com/vi/-M6XSAEWaf0/0.jpg)](https://www.youtube.com/watch?v=-M6XSAEWaf0)
 
 
 ## Hardware
@@ -71,8 +74,6 @@ https://github.com/henrynoyes/jarvis-gpt/assets/107648313/ffaeb136-671c-473f-ab0
 
 ## Future Developments
 
-- Inherit websocket + gui control structure from [OpenInterpreter](https://github.com/OpenInterpreter/01) to enable function calling on external PC
-- Allow multiple exchanges with historical context, more like ChatGPT (ex: "Read me my notes from yesterday" $\rightarrow$ "Delete the second one")
 - Replace startup mp3 with custom message detailing date, time, and weather
 - Replace local notetaking functionality with a cloud-based application that can be accessed from other devices (mobile/PC)
 - Integrate text-to-3D-models using [Shape-E](https://github.com/openai/shap-e) ("Hey JARVIS, make me a 3D model of ...") $\vert$ Long term: text-to-CAD? ("Hey JARVIS, create a CAD model of a box with dimensions ... Add a cylinder on top with dimensions ... and position it ...")
