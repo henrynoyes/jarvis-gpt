@@ -5,6 +5,7 @@ from openai import OpenAI
 from elevenlabs import Voice, stream
 from elevenlabs.client import ElevenLabs
 from time import sleep
+from pathlib import Path
 from gpiozero import LED
 from apa102 import APA102
 import sounddevice
@@ -25,14 +26,19 @@ class Jarvis:
         self.oai_client = OpenAI()
         self.elev_client = ElevenLabs()
         self.ws_client = WSClient()
-        self.notes_path = '/home/jarvis/jarvis-gpt/notes.json'
-        self.prompt_path = '/home/jarvis/jarvis-gpt/prompt.txt'
         self.led_driver = APA102(num_led=12)
         self.led_power = LED(5)
         self.bridge = Bridge(os.getenv('PHUE_IP'))
         self.owm = OWM(os.getenv('OWM_API_KEY'))
+        self.config_path = Path('/home/jarvis/jarvis-gpt/config')
+        self.notes_path = self.config_path / 'notes.json'
+        self.prompt_path = self.config_path / 'prompt.txt'
+        self.boot_path = self.config_path / 'boot.yaml'
+        self.msgs_path = self.config_path / 'messages.json'
         self.logo_dct = {'home': (1330, 76),
-                         'timer': (337, 50)}
+                         'timer': (337, 50),
+                         'messages': (),
+                         'terminal': ()}
         self.history = self.init_history()
         self.func_dct = {
             'shutdown': self.shutdown,
@@ -44,7 +50,7 @@ class Jarvis:
             'remove_note': self.remove_note,
             'power_lights': self.power_lights,
             'change_brightness': self.change_brightness,
-            'recolor_model': self.recolor_model,
+            # 'recolor_model': self.recolor_model,
             'start_timer': self.start_timer,
             'switch_dashboard': self.switch_dashboard
         }
@@ -175,24 +181,24 @@ class Jarvis:
                     'required': ['desired_light', 'desired_percent'],
                 },
             },
-            {
-                'name': 'recolor_model',
-                'description': 'Recolor a 3D model',
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        'current_color': {
-                            'type': 'string',
-                            'description': 'The current color to modify on the 3D model',
-                        },
-                        'new_color': {
-                            'type': 'string',
-                            'description': 'The new color to use on the 3D model',
-                        }
-                    },
-                    'required': ['current_color', 'new_color'],
-                },
-            },
+            # {
+            #     'name': 'recolor_model',
+            #     'description': 'Recolor a 3D model',
+            #     'parameters': {
+            #         'type': 'object',
+            #         'properties': {
+            #             'current_color': {
+            #                 'type': 'string',
+            #                 'description': 'The current color to modify on the 3D model',
+            #             },
+            #             'new_color': {
+            #                 'type': 'string',
+            #                 'description': 'The new color to use on the 3D model',
+            #             }
+            #         },
+            #         'required': ['current_color', 'new_color'],
+            #     },
+            # },
             {
                 'name': 'start_timer',
                 'description': 'Start a timer',
@@ -215,7 +221,7 @@ class Jarvis:
                     'properties': {
                         'desired_dashboard': {
                             'type': 'string',
-                            'enum': ['home', 'timer'],
+                            'enum': ['home', 'timer', 'messages', 'terminal'],
                             'description': 'The desired dashboard to switch to. Choose "home" if no dashboard name is specified.',
                         }
                     },
@@ -235,7 +241,7 @@ class Jarvis:
     
     def startup(self):
 
-        with open('/home/jarvis/jarvis-gpt/config.yaml', 'r') as f:
+        with open(self.boot_path, 'r') as f:
             cfg_dct = yaml.safe_load(f)
 
             if cfg_dct['startup_lights']:
@@ -251,20 +257,47 @@ class Jarvis:
 
     def shutdown(self):
         
-        with open('/home/jarvis/jarvis-gpt/config.yaml', 'r') as f:
+        with open(self.boot_path, 'r') as f:
             cfg_dct = yaml.safe_load(f)
 
             if cfg_dct['shutdown_lights']:
                 self.power_lights(cfg_dct['shutdown_lights'], 'off')
+        
+        if self.msgs_path.exists():
+            with open(self.msgs_path, 'w') as f:
+                json.dump([], f)
 
         print('raising exception')
         raise Shutdown
         
-    def init_notes(self, notes_path):
-        if not os.path.exists(notes_path):
+    def init_notes(self):
+        if not self.notes_path.exists():
             print('creating notes json')
-            with open(notes_path, 'w') as f:
+            with open(self.notes_path, 'w') as f:
                 json.dump(dict(), f)
+
+    def dash(self, x, y):
+        pyg.moveTo(x, y)
+        pyg.click()
+        sleep(0.1)
+
+    def log_message(self, role, content):
+        message = {
+            'role': role,
+            'content': content,
+            'timestamp': datetime.now().strftime('%I:%M %p')
+        }
+        
+        try:
+            with open(self.msgs_path, 'r') as f:
+                messages = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            messages = []
+            
+        messages.append(message)
+        
+        with open(self.msgs_path, 'w') as f:
+            json.dump(messages, f)
         
     def get_current_datetime(self):
         now = datetime.now()
@@ -414,11 +447,6 @@ class Jarvis:
                'arguments': args}
         self.ws_client.run(json.dumps(msg))
         return self.ws_client.resp_dct
-    
-    def dash(self, x, y):
-        pyg.moveTo(x, y)
-        pyg.click()
-        sleep(1)
 
     def switch_dashboard(self, desired_dashboard):
 
@@ -433,9 +461,9 @@ class Jarvis:
         self.dash(662, 209)
 
         pyg.press('backspace')
-        sleep(1)
+        sleep(0.1)
         pyg.write(desired_length)
-        sleep(1)
+        sleep(0.1)
 
         self.dash(910, 600)
         
@@ -478,6 +506,7 @@ class Jarvis:
         
         self.trim_history()
         self.history.append({'role': 'user', 'content': text})
+        self.log_message('user', text)
 
         response = self.oai_client.chat.completions.create(
             model='gpt-3.5-turbo',
@@ -515,6 +544,7 @@ class Jarvis:
 
                 if resp_msg.content:
                     self.history.append({'role': 'assistant', 'content': resp_msg.content})
+                    self.log_message('jarvis', resp_msg.content)
             
         print(resp_msg.content)
         return resp_msg.content
@@ -536,15 +566,18 @@ class Jarvis:
             stream=True
             )
         
-        print('Playing audio...')
-        stream(audio)
+        try:
+            stream(audio)
+            print('Playing audio...')
+        except Exception as e:
+            print(f'Error playing audio: {e}')
 
         self.led_driver.clear_strip()
         self.led_power.off()
 
     def run(self):
 
-        self.init_notes(self.notes_path)
+        self.init_notes()
         text = self.listen()
         if text:
             response = self.request(text)
