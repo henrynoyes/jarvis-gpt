@@ -563,9 +563,10 @@ class Jarvis:
 
                 if resp_msg.content:
                     self.history.append({'role': 'assistant', 'content': resp_msg.content})
-                    self.log_message('jarvis', resp_msg.content)
-            
-        self.log_output(resp_msg.content)
+
+        if resp_msg.content:
+            self.log_message('jarvis', resp_msg.content)
+            self.log_output(resp_msg.content)
         return resp_msg.content
         
     def play(self, response):
