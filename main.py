@@ -47,10 +47,10 @@ class Jarvis:
                 datefmt='%H:%M:%S',
                 filemode='w'
             )
-        self.logo_dct = {'home': (1330, 76),
-                         'timer': (337, 50),
-                         'messages': (),
-                         'terminal': ()}
+        self.logo_dct = {'home': (1820, 70),
+                         'timer': (530, 50),
+                         'messages': (710, 50),
+                         'terminal': (910, 50)}
         self.history = self.init_history()
         self.func_dct = {
             'shutdown': self.shutdown,
@@ -299,7 +299,7 @@ class Jarvis:
         message = {
             'role': role,
             'content': content,
-            'timestamp': datetime.now().strftime('%I:%M %p')
+            'timestamp': datetime.now().strftime('%l:%M %p').strip()
         }
         
         try:
