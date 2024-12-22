@@ -257,6 +257,8 @@ class Jarvis:
 
     def shutdown(self):
         
+        self.switch_dashboard('home')
+
         with open(self.boot_path, 'r') as f:
             cfg_dct = yaml.safe_load(f)
 
@@ -267,7 +269,7 @@ class Jarvis:
             with open(self.msgs_path, 'w') as f:
                 json.dump([], f)
 
-        print('raising exception')
+        print('raising shutdown exception')
         raise Shutdown
         
     def init_notes(self):
@@ -279,7 +281,7 @@ class Jarvis:
     def dash(self, x, y):
         pyg.moveTo(x, y)
         pyg.click()
-        sleep(0.1)
+        sleep(0.2)
 
     def log_message(self, role, content):
         message = {
@@ -461,9 +463,9 @@ class Jarvis:
         self.dash(662, 209)
 
         pyg.press('backspace')
-        sleep(0.1)
+        sleep(0.2)
         pyg.write(desired_length)
-        sleep(0.1)
+        sleep(0.2)
 
         self.dash(910, 600)
         
