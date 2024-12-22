@@ -6,6 +6,7 @@ from elevenlabs import Voice, stream
 from elevenlabs.client import ElevenLabs
 from time import sleep
 from pathlib import Path
+import logging
 from gpiozero import LED
 from apa102 import APA102
 import sounddevice
@@ -22,7 +23,8 @@ class Shutdown(Exception):
 
 class Jarvis:
 
-    def __init__(self):
+    def __init__(self, log=False):
+        self.log = log
         self.oai_client = OpenAI()
         self.elev_client = ElevenLabs()
         self.ws_client = WSClient()
@@ -35,6 +37,15 @@ class Jarvis:
         self.prompt_path = self.config_path / 'prompt.txt'
         self.boot_path = self.config_path / 'boot.yaml'
         self.msgs_path = self.config_path / 'messages.json'
+        self.log_path = self.config_path / 'terminal.log'
+
+        if self.log:
+            logging.basicConfig(
+                filename=self.log_path,
+                level=logging.INFO,
+                format='%(asctime)s - %(message)s',
+                datefmt='%H:%M:%S'
+            )
         self.logo_dct = {'home': (1330, 76),
                          'timer': (337, 50),
                          'messages': (),
@@ -269,12 +280,12 @@ class Jarvis:
             with open(self.msgs_path, 'w') as f:
                 json.dump([], f)
 
-        print('raising shutdown exception')
+        self.log_output('Raising shutdown exception')
         raise Shutdown
         
     def init_notes(self):
         if not self.notes_path.exists():
-            print('creating notes json')
+            self.log_output('Creating notes json')
             with open(self.notes_path, 'w') as f:
                 json.dump(dict(), f)
 
@@ -300,6 +311,12 @@ class Jarvis:
         
         with open(self.msgs_path, 'w') as f:
             json.dump(messages, f)
+
+    def log_output(self, msg):
+        if self.log:
+            logging.info(msg)
+        else:
+            print(msg)
         
     def get_current_datetime(self):
         now = datetime.now()
@@ -310,7 +327,7 @@ class Jarvis:
     
     def get_current_weather(self, loc=os.getenv('JARVIS_LOCATION')):
 
-        print(loc)
+        self.log_output(f'{loc=}')
 
         coder = self.owm.geocoding_manager()
         loc_info = coder.geocode(loc)[0]
@@ -324,7 +341,7 @@ class Jarvis:
     
     def get_future_weather(self, days, loc=os.getenv('JARVIS_LOCATION')):
 
-        print(days, loc)
+        self.log_output(f'{days=} {loc=}')
 
         coder = self.owm.geocoding_manager()
         loc_info = coder.geocode(loc)[0]
@@ -355,7 +372,7 @@ class Jarvis:
         return {'status': 'complete', 'note': note}
 
     def read_note(self, date):
-        print(date)
+        self.log_output(f'{date=}')
 
         with open(self.notes_path, 'r') as f:
             notes_dct = json.load(f)
@@ -371,7 +388,7 @@ class Jarvis:
         return {'status': status, 'notes': return_dct}
 
     def remove_note(self, date, index):
-        print(date, index)
+        self.log_output(f'{date=} {index=}')
 
         with open(self.notes_path, 'r') as f:
             notes_dct = json.load(f)
@@ -392,7 +409,7 @@ class Jarvis:
         return {'status': status, 'old notes': old_notes[date], 'updated notes': notes_dct[date]}
     
     def power_lights(self, desired_light, desired_state):
-        print(desired_light, desired_state)
+        self.log_output(f'{desired_light=} {desired_state=}')
 
         bool_dct = {'on': True, 'off': False}
         bool_state = bool_dct[desired_state]
@@ -413,11 +430,10 @@ class Jarvis:
         return None
     
     def change_brightness(self, desired_light, desired_percent):
-        print(desired_light, desired_percent)
 
         desired_bri = int(int(desired_percent) * 2.54)
 
-        print(desired_bri)
+        self.log_output(f'{desired_light=} {desired_bri=}')
 
         if desired_bri < 0 or desired_bri > 254:
             return {'status': 'Error: The requested brightness is not valid', 'brightness': desired_percent}
@@ -479,7 +495,7 @@ class Jarvis:
             try:
                 # ambient adjustment causes longer delay
                 r.adjust_for_ambient_noise(source)
-                print("Listening...")
+                self.log_output('Listening...')
             
                 for i in range(12):
                     self.led_driver.set_pixel(i, 255, 100, 0)
@@ -488,23 +504,23 @@ class Jarvis:
                 audio = r.listen(source, timeout=6)
                 self.led_driver.clear_strip()
 
-                print('Recognizing...')
+                self.log_output('Recognizing...')
                 text = r.recognize_google(audio)
-                print(text)
+                self.log_output(text)
                 return text
 
             except sr.WaitTimeoutError:
                 self.led_driver.clear_strip()
-                print('timed out')
+                self.log_output('timed out')
                 return None
 
             except:
-                print(f'no text recognized')
+                self.log_output('no text recognized')
                 return None
         
     def request(self, text):
 
-        print('Responding...')
+        self.log_output('Responding...')
         
         self.trim_history()
         self.history.append({'role': 'user', 'content': text})
@@ -526,7 +542,7 @@ class Jarvis:
             func_args = json.loads(resp_msg.function_call.arguments)
             func_to_call = self.func_dct[func_name]
 
-            print(f'Calling {func_name}...')
+            self.log_output(f'Calling {func_name}...')
             func_response = func_to_call(**func_args)
             if func_response:
                 self.history.append(
@@ -537,7 +553,7 @@ class Jarvis:
                     }
                 )
 
-                print('Function Responding...')
+                self.log_output('Function Responding...')
                 response = self.oai_client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=self.history)
@@ -548,7 +564,7 @@ class Jarvis:
                     self.history.append({'role': 'assistant', 'content': resp_msg.content})
                     self.log_message('jarvis', resp_msg.content)
             
-        print(resp_msg.content)
+        self.log_output(resp_msg.content)
         return resp_msg.content
         
     def play(self, response):
@@ -557,7 +573,7 @@ class Jarvis:
             self.led_driver.set_pixel(i, 10, 100, 10)
         self.led_driver.show()
         
-        print('Generating audio...')
+        self.log_output('Generating audio...')
 
         jv_voice = Voice(voice_id=os.getenv('JARVIS_VOICEID'))
 
@@ -570,9 +586,9 @@ class Jarvis:
         
         try:
             stream(audio)
-            print('Playing audio...')
+            self.log_output('Playing audio...')
         except Exception as e:
-            print(f'Error playing audio: {e}')
+            self.log_output(f'Error playing audio: {e}')
 
         self.led_driver.clear_strip()
         self.led_power.off()

@@ -5,7 +5,7 @@ from main import Jarvis, Shutdown
 from pygame import mixer
 from time import sleep
 
-jv = Jarvis()
+jv = Jarvis(log=True)
 
 porcupine = pvporcupine.create(access_key=os.getenv('PICOVOICE_API_KEY'), keywords=['jarvis'])
 recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)

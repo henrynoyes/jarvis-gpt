@@ -11,7 +11,7 @@ class Buffer(deque):
     def zeros(self):
         self.extend([0] * self.maxlen)
 
-jv = Jarvis()
+jv = Jarvis(log=True)
 
 pin = 13
 GPIO.setmode(GPIO.BCM)
