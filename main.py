@@ -45,6 +45,7 @@ class Jarvis:
                 level=logging.INFO,
                 format='%(asctime)s - %(message)s',
                 datefmt='%H:%M:%S'
+                filemode='w'
             )
         self.logo_dct = {'home': (1330, 76),
                          'timer': (337, 50),
